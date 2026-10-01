@@ -159,3 +159,11 @@ h1, h2, h3, h4, h5, h6 {
 .animate-bounce-slow {
   animation: bounce-slow 2s ease-in-out infinite;
 }
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
