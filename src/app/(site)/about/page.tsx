@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  ArrowLeft,
   Award,
   GraduationCap,
   HeartPulse,
@@ -128,8 +129,7 @@ export default function AboutPage() {
             </div>
 
             <h2 className="text-3xl md:text-4xl font-bold text-ink-800 leading-tight">
-              دکتر{" "}
-              <span className="text-brand-700">قره‌داغی</span>
+              دکتر <span className="text-brand-700">قره‌داغی</span>
             </h2>
 
             <p className="mt-2 text-base text-muted font-medium">
@@ -224,8 +224,7 @@ export default function AboutPage() {
               <div>
                 <h3 className="text-sm font-bold text-ink-800 mb-1">آدرس</h3>
                 <p className="text-xs text-ink-800/70 leading-relaxed">
-                  تهران، خیابان ولیعصر، بالاتر از پارک ساعی، پلاک ۱۲۳، طبقه
-                  ۲
+                  تهران، خیابان ولیعصر، بالاتر از پارک ساعی، پلاک ۱۲۳، طبقه ۲
                 </p>
               </div>
             </div>
