@@ -1,0 +1,11 @@
+name = "doctordv2"
+main = ".open-next/worker.js"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[build]
+command = "npm run build:worker"
