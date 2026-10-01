@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X, Phone, CalendarCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,8 @@ const NAV_ITEMS = [
 ];
 
 export function Header() {
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -30,14 +33,31 @@ export function Header() {
     };
   }, [isMobileOpen]);
 
+  // ─── Header state ──────────────────────────────
+  // solid  → پس‌زمینه سفید، متن تیره (وقتی اسکرول کردیم)
+  // glass  → پس‌زمینه تیره شفاف، متن سفید (صفحات داخلی قبل از اسکرول)
+  // clear  → شفاف، متن سفید (صفحه‌ی اصلی قبل از اسکرول)
+  const variant: "solid" | "glass" | "clear" = isScrolled
+    ? "solid"
+    : isHomePage
+    ? "clear"
+    : "glass";
+
+  const textMain =
+    variant === "solid" ? "text-ink-800" : "text-white";
+  const textSub =
+    variant === "solid" ? "text-muted" : "text-white/70";
+
   return (
     <>
       <header
         className={cn(
           "fixed inset-x-0 top-0 z-50 transition-all duration-300",
-          isScrolled
-            ? "bg-surface/95 backdrop-blur-md shadow-[var(--shadow-soft)] border-b border-border"
-            : "bg-transparent"
+          variant === "solid" &&
+            "bg-surface/95 backdrop-blur-md shadow-[var(--shadow-soft)] border-b border-border",
+          variant === "glass" &&
+            "bg-ink-900/50 backdrop-blur-md border-b border-white/10",
+          variant === "clear" && "bg-transparent"
         )}
       >
         <div className="container mx-auto flex h-16 md:h-20 items-center justify-between px-4 md:px-6">
@@ -50,7 +70,7 @@ export function Header() {
               <span
                 className={cn(
                   "text-sm md:text-base font-bold transition-colors",
-                  isScrolled ? "text-ink-800" : "text-white"
+                  textMain
                 )}
               >
                 دکتر قره‌داغی
@@ -58,7 +78,7 @@ export function Header() {
               <span
                 className={cn(
                   "text-[10px] md:text-xs transition-colors",
-                  isScrolled ? "text-muted" : "text-white/70"
+                  textSub
                 )}
               >
                 دندانپزشکی تخصصی
@@ -74,7 +94,7 @@ export function Header() {
                 href={item.href}
                 className={cn(
                   "rounded-lg px-4 py-2 text-sm font-medium transition",
-                  isScrolled
+                  variant === "solid"
                     ? "text-foreground/80 hover:text-brand-700 hover:bg-brand-50"
                     : "text-white/90 hover:text-white hover:bg-white/10"
                 )}
@@ -90,7 +110,7 @@ export function Header() {
               href="tel:+982100000000"
               className={cn(
                 "hidden md:flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition",
-                isScrolled
+                variant === "solid"
                   ? "border-border hover:bg-brand-50"
                   : "border-white/30 text-white hover:bg-white/10"
               )}
@@ -98,7 +118,7 @@ export function Header() {
               <Phone
                 className={cn(
                   "h-4 w-4",
-                  isScrolled ? "text-brand-700" : "text-white"
+                  variant === "solid" ? "text-brand-700" : "text-white"
                 )}
               />
               <span dir="ltr">۰۲۱-۰۰۰۰۰۰۰۰</span>
@@ -108,7 +128,7 @@ export function Header() {
               href="/booking"
               className={cn(
                 "hidden md:inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition shadow-sm",
-                isScrolled
+                variant === "solid"
                   ? "bg-brand-700 text-white hover:bg-brand-800"
                   : "bg-gold-500 text-ink-900 hover:bg-gold-400"
               )}
@@ -121,7 +141,7 @@ export function Header() {
               onClick={() => setIsMobileOpen(true)}
               className={cn(
                 "md:hidden flex h-10 w-10 items-center justify-center rounded-lg border transition",
-                isScrolled
+                variant === "solid"
                   ? "border-border text-foreground"
                   : "border-white/30 text-white"
               )}
