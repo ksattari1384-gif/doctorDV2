@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════
+   Qarahdaghi Dental — Design Tokens
+   همه‌ی این متغیرها از پنل مدیریت قابل تغییرن.
+   پیش‌فرض: تم "تیل-طلایی"
+   ═══════════════════════════════════════════════════════ */
+
+@theme {
+  /* ─── Colors ─────────────────────────── */
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-300: #5eead4;
+  --color-brand-400: #2dd4bf;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e4a;
+  --color-brand-950: #042f2e;
+
+  --color-gold-400: #e5c158;
+  --color-gold-500: #d4af37;
+  --color-gold-600: #c9a227;
+  --color-gold-700: #a8861f;
+
+  --color-ink-900: #0b1f1d;
+  --color-ink-800: #0f172a;
+
+  /* ─── Surface ─────────────────────────── */
+  --color-background: #fbfbf8;
+  --color-surface: #ffffff;
+  --color-border: #e7e5e4;
+
+  /* ─── Text ────────────────────────────── */
+  --color-foreground: #0f172a;
+  --color-muted: #64748b;
+
+  /* ─── Status ──────────────────────────── */
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-info: #0284c7;
+
+  /* ─── Radius ──────────────────────────── */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* ─── Typography ──────────────────────── */
+  --font-sans: var(--font-vazirmatn), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-estedad), var(--font-vazirmatn), sans-serif;
+
+  /* ─── Shadow ──────────────────────────── */
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-elevated: 0 4px 8px rgba(15, 23, 42, 0.05),
+    0 12px 32px rgba(15, 23, 42, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Base
+   ═══════════════════════════════════════════════════════ */
+
+* {
+  border-color: var(--color-border);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "ss02";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ─── Focus ring ──────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Scrollbar ───────────────────────── */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 999px;
+  border: 2px solid var(--color-background);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
+}
+
+/* ─── Selection ───────────────────────── */
+::selection {
+  background: var(--color-brand-200);
+  color: var(--color-brand-900);
+}
+@keyframes pulse-slow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(15, 118, 110, 0);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2.5s ease-in-out infinite;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out both;
+}
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, 8px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
