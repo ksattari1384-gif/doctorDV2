@@ -9,10 +9,8 @@ import {
   Clock,
   User,
   CheckCircle2,
-  Search,
   Sparkles,
   Phone,
-  MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -73,7 +71,6 @@ export default function BookingPage() {
     setSubmitted(true);
   };
 
-  // ─── Success view ─────────────────────────────
   if (submitted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4 py-20">
@@ -120,10 +117,8 @@ export default function BookingPage() {
     );
   }
 
-  // ─── Multi-step form ──────────────────────────
   return (
     <div className="min-h-screen bg-background pb-72 md:pb-80">
-      {/* Header */}
       <div className="bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900 pt-24 md:pt-28 pb-16 md:pb-20 rounded-b-[32px] md:rounded-b-[48px]">
         <div className="container mx-auto px-4 md:px-6">
           <Link
@@ -146,7 +141,6 @@ export default function BookingPage() {
         </div>
       </div>
 
-      {/* Steps indicator */}
       <div className="container mx-auto px-4 md:px-6 -mt-8 relative z-10">
         <div className="rounded-3xl bg-surface border border-border shadow-elevated p-4 md:p-5">
           <div className="flex items-center justify-between">
@@ -202,9 +196,7 @@ export default function BookingPage() {
         </div>
       </div>
 
-      {/* Step content */}
       <div className="container mx-auto px-4 md:px-6 mt-6 md:mt-8">
-        {/* ─── STEP 1: انتخاب خدمت ──────────────── */}
         {step === 1 && (
           <div>
             <h2 className="text-lg md:text-xl font-bold text-ink-800 mb-4">
@@ -246,7 +238,6 @@ export default function BookingPage() {
           </div>
         )}
 
-        {/* ─── STEP 2: انتخاب زمان ──────────────── */}
         {step === 2 && (
           <div>
             <h2 className="text-lg md:text-xl font-bold text-ink-800 mb-4">
@@ -313,7 +304,6 @@ export default function BookingPage() {
           </div>
         )}
 
-        {/* ─── STEP 3: اطلاعات بیمار ────────────── */}
         {step === 3 && (
           <div>
             <h2 className="text-lg md:text-xl font-bold text-ink-800 mb-4">
@@ -381,7 +371,6 @@ export default function BookingPage() {
           </div>
         )}
 
-        {/* ─── STEP 4: تأیید ───────────────────── */}
         {step === 4 && (
           <div>
             <h2 className="text-lg md:text-xl font-bold text-ink-800 mb-4">
@@ -461,7 +450,6 @@ export default function BookingPage() {
         )}
       </div>
 
-      {/* ─── Navigation bar ────────────────────────── */}
       <div className="fixed bottom-5 right-4 left-4 md:left-auto md:right-6 md:w-auto z-30 md:max-w-md">
         <div className="flex items-center gap-2">
           {step > 1 && (
