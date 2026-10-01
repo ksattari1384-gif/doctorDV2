@@ -122,7 +122,7 @@ export default async function ServiceDetailPage({
   }
 
   return (
-    <div className="bg-background min-h-screen pb-40">
+    <div className="bg-background min-h-screen pb-56 md:pb-64">
       <div className="relative h-[280px] md:h-[400px] bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900">
         <div className="absolute inset-0 bg-gradient-to-b from-ink-900/40 via-transparent to-ink-900/80" />
         <div className="absolute inset-0 flex items-center justify-center">

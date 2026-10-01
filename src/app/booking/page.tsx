@@ -123,7 +123,7 @@ export default function BookingPage() {
 
   // ─── Multi-step form ──────────────────────────
   return (
-    <div className="min-h-screen bg-background pb-40">
+    <div className="min-h-screen bg-background pb-56 md:pb-64">
       {/* Header */}
       <div className="bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900 pt-8 pb-12 md:pb-16 rounded-b-[32px]">
         <div className="container mx-auto px-4 md:px-6">

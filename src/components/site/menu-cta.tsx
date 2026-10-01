@@ -3,7 +3,7 @@ import { CalendarCheck, ArrowLeft } from "lucide-react";
 
 export function MenuCta() {
   return (
-    <div className="fixed bottom-5 right-4 left-4 md:left-auto md:right-6 md:w-auto z-30 md:max-w-md">
+    <div className="fixed bottom-5 right-20 md:right-6 md:left-auto left-20 md:w-auto z-30 md:max-w-md">
       <Link
         href="/booking"
         className="group flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-l from-brand-700 to-brand-800 px-5 py-4 md:px-7 md:py-5 text-white shadow-2xl shadow-brand-700/30 hover:shadow-brand-700/50 hover:scale-[1.02] active:scale-[0.98] transition-all"

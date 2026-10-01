@@ -11,7 +11,7 @@ export default function HomePage() {
   return (
     <>
       <Header />
-      <main className="pb-40 md:pb-48 bg-background min-h-screen">
+      <main className="pb-56 md:pb-64 bg-background min-h-screen">
         <MenuHero
           enabled={true}
           videoUrl="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
