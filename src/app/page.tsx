@@ -3,8 +3,7 @@ import { Footer } from "@/components/site/footer";
 import { FloatingBar } from "@/components/site/floating-bar";
 import { MenuHero } from "@/components/site/menu-hero";
 import { AboutCard } from "@/components/site/about-card";
-import { ServiceFilters } from "@/components/site/service-filters";
-import { ServiceGrid } from "@/components/site/service-grid";
+import { ServicesSection } from "@/components/site/services-section";
 import { MenuCta } from "@/components/site/menu-cta";
 
 export default function HomePage() {
@@ -16,9 +15,9 @@ export default function HomePage() {
           enabled={true}
           videoUrl="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
         />
-<div className="container mx-auto px-4 md:px-6 relative z-10 pt-6 md:pt-8">          <AboutCard />
-          <ServiceFilters />
-          <ServiceGrid />
+        <div className="container mx-auto px-4 md:px-6 relative z-10 pt-6 md:pt-8">
+          <AboutCard />
+          <ServicesSection />
         </div>
       </main>
       <Footer />
