@@ -1,0 +1,508 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import {
+  ArrowRight,
+  ArrowLeft,
+  Calendar,
+  Clock,
+  User,
+  CheckCircle2,
+  Search,
+  Sparkles,
+  Phone,
+  MapPin,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+type Step = 1 | 2 | 3 | 4;
+
+const SERVICES = [
+  { id: "implant", name: "ایمپلنت دندان", price: "۱۵,۰۰۰,۰۰۰", duration: 60, emoji: "🦷" },
+  { id: "laminate", name: "لمینت سرامیکی", price: "۸,۰۰۰,۰۰۰", duration: 90, emoji: "💎" },
+  { id: "orthodontics", name: "ارتودنسی", price: "مشاوره رایگان", duration: 45, emoji: "✨" },
+  { id: "root-canal", name: "عصب‌کشی", price: "۲,۵۰۰,۰۰۰", duration: 60, emoji: "🩺" },
+  { id: "scaling", name: "جرم‌گیری", price: "۸۰۰,۰۰۰", duration: 30, emoji: "🛡️" },
+  { id: "pediatric", name: "دندانپزشکی کودکان", price: "۵۰۰,۰۰۰", duration: 30, emoji: "🧒" },
+];
+
+const TIME_SLOTS = [
+  "۰۹:۰۰", "۰۹:۳۰", "۱۰:۰۰", "۱۰:۳۰",
+  "۱۱:۰۰", "۱۱:۳۰", "۱۲:۰۰",
+  "۱۴:۰۰", "۱۴:۳۰", "۱۵:۰۰", "۱۵:۳۰",
+  "۱۶:۰۰", "۱۶:۳۰", "۱۷:۰۰", "۱۷:۳۰", "۱۸:۰۰",
+];
+
+// ۷ روز آینده
+const getNextDays = () => {
+  const days = [];
+  const weekdays = ["یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"];
+  const now = new Date();
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() + i);
+    days.push({
+      date: d,
+      dayName: weekdays[d.getDay()],
+      dayNum: d.getDate(),
+      month: d.toLocaleDateString("fa-IR", { month: "short" }),
+      isToday: i === 0,
+      isClosed: d.getDay() === 5, // جمعه
+    });
+  }
+  return days;
+};
+
+export default function BookingPage() {
+  const [step, setStep] = useState<Step>(1);
+  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [form, setForm] = useState({ firstName: "", lastName: "", phone: "", notes: "" });
+  const [submitted, setSubmitted] = useState(false);
+
+  const days = getNextDays();
+  const service = SERVICES.find((s) => s.id === selectedService);
+
+  const canGoNext =
+    (step === 1 && selectedService) ||
+    (step === 2 && selectedDay !== null && selectedTime) ||
+    (step === 3 && form.firstName && form.lastName && form.phone);
+
+  const handleSubmit = () => {
+    setSubmitted(true);
+  };
+
+  // ─── Success view ─────────────────────────────
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 py-20">
+        <div className="max-w-md w-full rounded-3xl bg-surface border border-border p-8 text-center shadow-elevated">
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-green-100 text-green-600 mb-5">
+            <CheckCircle2 className="h-10 w-10" />
+          </div>
+          <h1 className="text-2xl font-bold text-ink-800 mb-3">
+            درخواست شما ثبت شد!
+          </h1>
+          <p className="text-sm text-muted leading-relaxed mb-6">
+            درخواست رزرو شما با موفقیت دریافت شد. همکاران ما در اسرع وقت با
+            شما تماس می‌گیرند تا نوبت شما را تأیید کنند.
+          </p>
+
+          <div className="rounded-2xl bg-cream-200 p-4 mb-6 text-right space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ink-800/60">خدمت:</span>
+              <span className="font-bold text-ink-800">{service?.name}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ink-800/60">تاریخ:</span>
+              <span className="font-bold text-ink-800">
+                {selectedDay !== null && days[selectedDay].dayName}{" "}
+                {selectedDay !== null && days[selectedDay].dayNum}{" "}
+                {selectedDay !== null && days[selectedDay].month}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ink-800/60">ساعت:</span>
+              <span className="font-bold text-ink-800">{selectedTime}</span>
+            </div>
+          </div>
+
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-6 py-3 text-sm font-bold text-white hover:bg-brand-800 transition"
+          >
+            بازگشت به صفحه اصلی
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Multi-step form ──────────────────────────
+  return (
+    <div className="min-h-screen bg-background pb-40">
+      {/* Header */}
+      <div className="bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900 pt-8 pb-12 md:pb-16 rounded-b-[32px]">
+        <div className="container mx-auto px-4 md:px-6">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition mb-5"
+          >
+            <ArrowRight className="h-4 w-4" />
+            بازگشت
+          </Link>
+
+          <h1 className="text-2xl md:text-3xl font-bold text-white">
+            رزرو نوبت آنلاین
+          </h1>
+          <p className="mt-2 text-sm text-white/70">
+            در ۳ مرحله‌ی ساده نوبت خود را رزرو کنید
+          </p>
+        </div>
+      </div>
+
+      {/* Steps indicator */}
+      <div className="container mx-auto px-4 md:px-6 -mt-6">
+        <div className="rounded-2xl bg-surface border border-border shadow-soft p-3 md:p-4">
+          <div className="flex items-center justify-between">
+            {[
+              { num: 1, label: "انتخاب خدمت", icon: Sparkles },
+              { num: 2, label: "زمان", icon: Calendar },
+              { num: 3, label: "اطلاعات", icon: User },
+              { num: 4, label: "تأیید", icon: CheckCircle2 },
+            ].map((s, idx) => {
+              const Icon = s.icon;
+              const isActive = step === s.num;
+              const isDone = step > s.num;
+              return (
+                <div key={s.num} className="flex items-center flex-1">
+                  <div className="flex flex-col items-center flex-1">
+                    <div
+                      className={cn(
+                        "flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full transition-all",
+                        isDone
+                          ? "bg-green-500 text-white"
+                          : isActive
+                          ? "bg-gold-500 text-ink-900 shadow-md"
+                          : "bg-brand-50 text-muted"
+                      )}
+                    >
+                      {isDone ? (
+                        <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5" />
+                      ) : (
+                        <Icon className="h-4 w-4 md:h-5 md:w-5" />
+                      )}
+                    </div>
+                    <span
+                      className={cn(
+                        "mt-1.5 text-[10px] md:text-xs font-medium hidden sm:block",
+                        isActive ? "text-ink-800" : "text-muted"
+                      )}
+                    >
+                      {s.label}
+                    </span>
+                  </div>
+                  {idx < 3 && (
+                    <div
+                      className={cn(
+                        "h-0.5 flex-1 mx-1 transition-colors",
+                        step > s.num ? "bg-green-400" : "bg-border"
+                      )}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Step content */}
+      <div className="container mx-auto px-4 md:px-6 mt-6 md:mt-8">
+        {/* ─── STEP 1: انتخاب خدمت ──────────────── */}
+        {step === 1 && (
+          <div>
+            <h2 className="text-lg md:text-xl font-bold text-ink-800 mb-4">
+              چه خدمتی می‌خواهید؟
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {SERVICES.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setSelectedService(s.id)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-2xl border-2 p-4 transition-all text-right",
+                    selectedService === s.id
+                      ? "border-gold-500 bg-gold-500/5 shadow-md"
+                      : "border-border bg-surface hover:border-brand-300"
+                  )}
+                >
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-cream-200 text-3xl">
+                    {s.emoji}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-ink-800 text-sm md:text-base">
+                      {s.name}
+                    </div>
+                    <div className="mt-1 flex items-center gap-3 text-xs text-muted">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {s.duration} دقیقه
+                      </span>
+                      <span className="font-bold text-brand-700">{s.price}</span>
+                    </div>
+                  </div>
+                  {selectedService === s.id && (
+                    <CheckCircle2 className="h-5 w-5 text-gold-500 shrink-0" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ─── STEP 2: انتخاب زمان ──────────────── */}
+        {step === 2 && (
+          <div>
+            <h2 className="text-lg md:text-xl font-bold text-ink-800 mb-4">
+              چه زمانی مناسب شماست؟
+            </h2>
+
+            {/* Days */}
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {days.map((d, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => !d.isClosed && setSelectedDay(idx)}
+                  disabled={d.isClosed}
+                  className={cn(
+                    "shrink-0 rounded-2xl border-2 px-4 py-3 text-center min-w-[80px] transition-all",
+                    d.isClosed
+                      ? "border-border bg-background opacity-40 cursor-not-allowed"
+                      : selectedDay === idx
+                      ? "border-gold-500 bg-gold-500/10 shadow-md"
+                      : "border-border bg-surface hover:border-brand-300"
+                  )}
+                >
+                  <div className="text-xs text-muted">{d.dayName}</div>
+                  <div className="mt-1 text-lg font-bold text-ink-800">
+                    {d.dayNum}
+                  </div>
+                  <div className="text-[10px] text-muted">{d.month}</div>
+                  {d.isToday && (
+                    <div className="mt-1 inline-block rounded-full bg-brand-100 px-2 py-0.5 text-[9px] text-brand-800">
+                      امروز
+                    </div>
+                  )}
+                  {d.isClosed && (
+                    <div className="mt-1 inline-block rounded-full bg-red-100 px-2 py-0.5 text-[9px] text-red-600">
+                      تعطیل
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Time slots */}
+            {selectedDay !== null && (
+              <div className="mt-6">
+                <h3 className="text-sm font-bold text-ink-800 mb-3">
+                  ساعت‌های آزاد
+                </h3>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                  {TIME_SLOTS.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setSelectedTime(t)}
+                      className={cn(
+                        "rounded-xl border py-2.5 text-sm font-medium transition-all",
+                        selectedTime === t
+                          ? "border-gold-500 bg-gold-500 text-ink-900 shadow-md"
+                          : "border-border bg-surface text-ink-800 hover:border-brand-300"
+                      )}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── STEP 3: اطلاعات بیمار ────────────── */}
+        {step === 3 && (
+          <div>
+            <h2 className="text-lg md:text-xl font-bold text-ink-800 mb-4">
+              اطلاعات شما
+            </h2>
+            <div className="rounded-3xl bg-surface border border-border p-5 md:p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-ink-800 mb-1.5">
+                    نام <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={form.firstName}
+                    onChange={(e) =>
+                      setForm({ ...form, firstName: e.target.value })
+                    }
+                    placeholder="مثلاً: علی"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-ink-800 mb-1.5">
+                    نام خانوادگی <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={form.lastName}
+                    onChange={(e) =>
+                      setForm({ ...form, lastName: e.target.value })
+                    }
+                    placeholder="مثلاً: محمدی"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-ink-800 mb-1.5">
+                  شماره موبایل <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                  dir="ltr"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition text-left"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-ink-800 mb-1.5">
+                  توضیحات (اختیاری)
+                </label>
+                <textarea
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  placeholder="اگر نکته‌ی خاصی هست، اینجا بنویسید..."
+                  rows={3}
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition resize-none"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─── STEP 4: تأیید ───────────────────── */}
+        {step === 4 && (
+          <div>
+            <h2 className="text-lg md:text-xl font-bold text-ink-800 mb-4">
+              تأیید نهایی
+            </h2>
+            <div className="rounded-3xl bg-surface border border-border p-5 md:p-6">
+              <div className="flex items-center gap-3 pb-4 border-b border-border">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-cream-200 text-3xl">
+                  {service?.emoji}
+                </div>
+                <div>
+                  <div className="font-bold text-ink-800">{service?.name}</div>
+                  <div className="text-xs text-muted mt-0.5">
+                    مدت زمان: {service?.duration} دقیقه
+                  </div>
+                </div>
+              </div>
+
+              <div className="py-4 space-y-3 border-b border-border">
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-brand-700" />
+                  <span className="text-muted">تاریخ:</span>
+                  <span className="font-medium text-ink-800">
+                    {selectedDay !== null && days[selectedDay].dayName}{" "}
+                    {selectedDay !== null && days[selectedDay].dayNum}{" "}
+                    {selectedDay !== null && days[selectedDay].month}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-brand-700" />
+                  <span className="text-muted">ساعت:</span>
+                  <span className="font-medium text-ink-800">
+                    {selectedTime}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="h-4 w-4 text-brand-700" />
+                  <span className="text-muted">نام:</span>
+                  <span className="font-medium text-ink-800">
+                    {form.firstName} {form.lastName}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="h-4 w-4 text-brand-700" />
+                  <span className="text-muted">موبایل:</span>
+                  <span className="font-medium text-ink-800" dir="ltr">
+                    {form.phone}
+                  </span>
+                </div>
+                {form.notes && (
+                  <div className="rounded-xl bg-cream-200 p-3 text-sm text-ink-800/80">
+                    {form.notes}
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-sm text-muted">هزینه‌ی تقریبی:</span>
+                <span className="text-base font-bold text-brand-700">
+                  {service?.price}
+                  {service?.price !== "مشاوره رایگان" && (
+                    <span className="text-xs font-normal text-muted mr-1">
+                      تومان
+                    </span>
+                  )}
+                </span>
+              </div>
+
+              <div className="mt-5 rounded-2xl bg-brand-50 border border-brand-100 p-4">
+                <p className="text-xs text-brand-800 leading-relaxed">
+                  💡 پس از ثبت درخواست، منشی مطب برای تأیید نهایی با شما تماس
+                  خواهد گرفت. نوبت شما پس از تأیید، قطعی می‌شود.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ─── Navigation bar ────────────────────────── */}
+      <div className="fixed bottom-5 right-4 left-4 md:left-auto md:right-6 md:w-auto z-30 md:max-w-md">
+        <div className="flex items-center gap-2">
+          {step > 1 && (
+            <button
+              onClick={() => setStep((s) => (s - 1) as Step)}
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white border-2 border-border text-ink-800 hover:bg-cream-200 transition shadow-lg"
+              aria-label="مرحله قبل"
+            >
+              <ArrowRight className="h-5 w-5" />
+            </button>
+          )}
+
+          {step < 4 ? (
+            <button
+              onClick={() => canGoNext && setStep((s) => (s + 1) as Step)}
+              disabled={!canGoNext}
+              className={cn(
+                "flex flex-1 items-center justify-between gap-3 rounded-2xl px-5 py-4 transition-all",
+                canGoNext
+                  ? "bg-gradient-to-l from-brand-700 to-brand-800 text-white shadow-2xl shadow-brand-700/30 hover:scale-[1.02]"
+                  : "bg-border text-muted cursor-not-allowed"
+              )}
+            >
+              <span className="text-sm md:text-base font-bold">
+                مرحله بعد
+              </span>
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              className="flex flex-1 items-center justify-between gap-3 rounded-2xl bg-gradient-to-l from-gold-500 to-gold-600 px-5 py-4 text-ink-900 shadow-2xl shadow-gold-500/30 hover:scale-[1.02] transition-all"
+            >
+              <span className="text-sm md:text-base font-bold">
+                ثبت درخواست رزرو
+              </span>
+              <CheckCircle2 className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
