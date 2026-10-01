@@ -67,7 +67,7 @@ export function FloatingBar() {
 
   return (
     <div
-className="fixed bottom-5 left-5 z-40 flex flex-col items-start gap-3"      onMouseEnter={() => setShowLabels(true)}
+className="fixed bottom-6 left-4 md:bottom-5 md:left-5 z-40 flex flex-col items-start gap-3"      onMouseEnter={() => setShowLabels(true)}
       onMouseLeave={() => setShowLabels(false)}
     >
       {/* Items */}

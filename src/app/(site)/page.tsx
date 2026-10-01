@@ -6,7 +6,7 @@ import { MenuCta } from "@/components/site/menu-cta";
 export default function HomePage() {
   return (
     <>
-      <main className="pb-56 md:pb-64 bg-background min-h-screen">
+      <main className="pb-64 md:pb-72 bg-background min-h-screen">
         <MenuHero
           enabled={true}
           videoUrl="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
