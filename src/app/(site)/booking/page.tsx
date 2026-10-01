@@ -34,7 +34,6 @@ const TIME_SLOTS = [
   "۱۶:۰۰", "۱۶:۳۰", "۱۷:۰۰", "۱۷:۳۰", "۱۸:۰۰",
 ];
 
-// ۷ روز آینده
 const getNextDays = () => {
   const days = [];
   const weekdays = ["یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"];
@@ -48,7 +47,7 @@ const getNextDays = () => {
       dayNum: d.getDate(),
       month: d.toLocaleDateString("fa-IR", { month: "short" }),
       isToday: i === 0,
-      isClosed: d.getDay() === 5, // جمعه
+      isClosed: d.getDay() === 5,
     });
   }
   return days;
@@ -125,7 +124,7 @@ export default function BookingPage() {
   return (
     <div className="min-h-screen bg-background pb-72 md:pb-80">
       {/* Header */}
-      <div className="bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900 pt-8 pb-12 md:pb-16 rounded-b-[32px]">
+      <div className="bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900 pt-24 md:pt-28 pb-16 md:pb-20 rounded-b-[32px] md:rounded-b-[48px]">
         <div className="container mx-auto px-4 md:px-6">
           <Link
             href="/"
@@ -135,18 +134,21 @@ export default function BookingPage() {
             بازگشت
           </Link>
 
-          <h1 className="text-2xl md:text-3xl font-bold text-white">
-            رزرو نوبت آنلاین
+          <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">
+            رزرو نوبت{" "}
+            <span className="bg-gradient-to-l from-gold-400 via-gold-500 to-gold-600 bg-clip-text text-transparent">
+              آنلاین
+            </span>
           </h1>
-          <p className="mt-2 text-sm text-white/70">
-            در ۳ مرحله‌ی ساده نوبت خود را رزرو کنید
+          <p className="mt-4 max-w-2xl text-base md:text-lg text-white/80 leading-relaxed">
+            در ۳ مرحله‌ی ساده، نوبت خود را رزرو کنید
           </p>
         </div>
       </div>
 
       {/* Steps indicator */}
-      <div className="container mx-auto px-4 md:px-6 -mt-6">
-        <div className="rounded-2xl bg-surface border border-border shadow-soft p-3 md:p-4">
+      <div className="container mx-auto px-4 md:px-6 -mt-8 relative z-10">
+        <div className="rounded-3xl bg-surface border border-border shadow-elevated p-4 md:p-5">
           <div className="flex items-center justify-between">
             {[
               { num: 1, label: "انتخاب خدمت", icon: Sparkles },
@@ -251,7 +253,6 @@ export default function BookingPage() {
               چه زمانی مناسب شماست؟
             </h2>
 
-            {/* Days */}
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {days.map((d, idx) => (
                 <button
@@ -286,7 +287,6 @@ export default function BookingPage() {
               ))}
             </div>
 
-            {/* Time slots */}
             {selectedDay !== null && (
               <div className="mt-6">
                 <h3 className="text-sm font-bold text-ink-800 mb-3">
