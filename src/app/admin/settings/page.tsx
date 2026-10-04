@@ -36,6 +36,27 @@ type Tab =
   | "integrations"
   | "danger";
 
+// ═══ Notifications Type ═══
+type Notifications = {
+  newAppointment: boolean;
+  cancelAppointment: boolean;
+  dailyReport: boolean;
+  weeklyReport: boolean;
+  appointmentReminder: boolean;
+  lowBalance: boolean;
+  systemUpdates: boolean;
+};
+
+const DEFAULT_NOTIFICATIONS: Notifications = {
+  newAppointment: true,
+  cancelAppointment: true,
+  dailyReport: true,
+  weeklyReport: false,
+  appointmentReminder: true,
+  lowBalance: false,
+  systemUpdates: true,
+};
+
 export default function SettingsPage() {
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
@@ -45,32 +66,19 @@ export default function SettingsPage() {
   const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Notifications state
-  const [notifications, setNotifications] = useState(() => {
+  // ═══ Notifications State (با تایپ صریح) ═══
+  const [notifications, setNotifications] = useState<Notifications>(() => {
     if (typeof window === "undefined") {
-      return {
-        newAppointment: true,
-        cancelAppointment: true,
-        dailyReport: true,
-        weeklyReport: false,
-        appointmentReminder: true,
-        lowBalance: false,
-        systemUpdates: true,
-      };
+      return DEFAULT_NOTIFICATIONS;
     }
     try {
       const saved = localStorage.getItem("admin-notifications");
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<Notifications>;
+        return { ...DEFAULT_NOTIFICATIONS, ...parsed };
+      }
     } catch {}
-    return {
-      newAppointment: true,
-      cancelAppointment: true,
-      dailyReport: true,
-      weeklyReport: false,
-      appointmentReminder: true,
-      lowBalance: false,
-      systemUpdates: true,
-    };
+    return DEFAULT_NOTIFICATIONS;
   });
 
   // ذخیره توی localStorage
@@ -175,7 +183,6 @@ export default function SettingsPage() {
               ═══════════════════════════════════════ */}
           {activeTab === "profile" && (
             <>
-              {/* Avatar */}
               <div className="rounded-2xl border border-border bg-surface p-5">
                 <h2 className="text-base font-bold text-ink-800 mb-4">
                   تصویر پروفایل
@@ -203,7 +210,6 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Personal info */}
               <div className="rounded-2xl border border-border bg-surface p-5 space-y-4">
                 <h2 className="text-base font-bold text-ink-800">
                   اطلاعات شخصی
@@ -278,7 +284,6 @@ export default function SettingsPage() {
               ═══════════════════════════════════════ */}
           {activeTab === "security" && (
             <>
-              {/* Change password */}
               <div className="rounded-2xl border border-border bg-surface p-5 space-y-4">
                 <div className="flex items-center gap-2">
                   <Lock className="h-5 w-5 text-brand-700" />
@@ -342,7 +347,6 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* 2FA */}
               <div className="rounded-2xl border border-border bg-surface p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
@@ -368,7 +372,6 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Sessions */}
               <div className="rounded-2xl border border-border bg-surface p-5 space-y-4">
                 <div className="flex items-center gap-2">
                   <Key className="h-5 w-5 text-brand-700" />
