@@ -25,6 +25,7 @@ export function Header() {
   const brandName = content.brandName;
   const brandSubtitle = content.brandSubtitle;
   const phone = content.phone;
+  const logoUrl = content.logoUrl;
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 20);
@@ -66,10 +67,18 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <div
-              className="flex h-10 w-10 items-center justify-center rounded-xl text-white font-bold shadow-sm"
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-white font-bold shadow-sm overflow-hidden shrink-0"
               style={{ background: "var(--theme-primary)" }}
             >
-              ق
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={brandName}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                "ق"
+              )}
             </div>
             <div className="flex flex-col leading-tight">
               <span
@@ -103,11 +112,6 @@ export function Header() {
                     ? "text-foreground/80 hover:bg-[var(--theme-primary-soft)]"
                     : "text-white/90 hover:text-white hover:bg-white/10"
                 )}
-                style={
-                  variant === "solid"
-                    ? { color: undefined }
-                    : undefined
-                }
                 onMouseEnter={(e) => {
                   if (variant === "solid") {
                     e.currentTarget.style.color = "var(--theme-primary)";

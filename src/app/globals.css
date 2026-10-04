@@ -220,3 +220,126 @@ h1, h2, h3, h4, h5, h6 {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+/* ═══════════════════════════════════════════════════════
+   Modern Hero Animations
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Count up برای اعداد ─── */
+@keyframes count-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-count-up {
+  animation: count-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Sound wave ─── */
+@keyframes sound-wave {
+  0%, 100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.sound-wave-bar {
+  animation: sound-wave 0.8s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+/* ─── Glow ring تازه ─── */
+@keyframes glow-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.6;
+  }
+}
+
+.animate-glow-ring {
+  animation: glow-ring 4s ease-in-out infinite;
+}
+
+/* ─── Fade in از پایین با blur ─── */
+@keyframes fade-blur-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-fade-blur-up {
+  animation: fade-blur-up 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Reveal from bottom ─── */
+.reveal-mask {
+  overflow: hidden;
+  display: inline-block;
+}
+
+/* ─── Gradient border animation ─── */
+@keyframes border-dance {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-border-dance {
+  background-size: 200% 200%;
+  animation: border-dance 4s ease-in-out infinite;
+}
+
+/* ─── Marquee (for stats) ─── */
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee-scroll 30s linear infinite;
+}
+
+/* ─── Pulse dot ─── */
+@keyframes pulse-dot {
+  0%, 100% {
+    box-shadow: 0 0 0 0 currentColor;
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 8px transparent;
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}

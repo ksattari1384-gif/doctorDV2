@@ -24,6 +24,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { useToast } from "@/components/admin/toast";
 import { Modal } from "@/components/admin/modal";
 import { useAdminStore } from "@/lib/stores/admin-store";
+import { parseVideoUrl } from "@/lib/utils/video";
 
 type Tab = "brand" | "hero" | "contact" | "social";
 
@@ -55,16 +56,74 @@ export default function ContentPage() {
     setSaving(false);
   };
 
+  // ═══ Logo Upload → Base64 ═══
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("حجم زیاده", "حداکثر ۲ مگابایت مجاز است.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      update("logoUrl", base64);
+      toast.success("لوگو آپلود شد", "لوگو با موفقیت ذخیره شد.");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // ═══ Poster Upload → Base64 ═══
+  const handlePosterUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("حجم زیاده", "حداکثر ۲ مگابایت مجاز است.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      update("heroPosterUrl", base64);
+      toast.success("تصویر آپلود شد", "تصویر جایگزین ذخیره شد.");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // ═══ Video URL Save ═══
   const handleSaveVideo = () => {
-    if (!videoUrlDraft.trim()) {
+    const url = videoUrlDraft.trim();
+    if (!url) {
       toast.error("خطا", "لطفاً یک آدرس معتبر وارد کنید.");
       return;
     }
-    update("heroVideoUrl", videoUrlDraft);
-    toast.success("ذخیره شد", "ویدیو با موفقیت ثبت شد.");
+
+    update("heroVideoUrl", url);
+
+    if (/aparat\.com/.test(url)) {
+      toast.success("ویدیو ثبت شد", "ویدیوی آپارات با موفقیت ثبت شد.");
+    } else if (/youtube\.com|youtu\.be/.test(url)) {
+      toast.success("ویدیو ثبت شد", "ویدیوی یوتیوب با موفقیت ثبت شد.");
+    } else if (/\.(mp4|webm|ogg|mov)(\?|$)/i.test(url)) {
+      toast.success("ویدیو ثبت شد", "ویدیوی MP4 با موفقیت ثبت شد.");
+    } else {
+      toast.warning(
+        "ثبت شد، ولی...",
+        "این لینک ممکن است پخش نشود. از لینک MP4، آپارات یا یوتیوب استفاده کنید."
+      );
+    }
+
     setVideoModalOpen(false);
     setVideoUrlDraft("");
   };
+
+  // ═══ Parsed Video ═══
+  const parsedVideo = parseVideoUrl(content.heroVideoUrl || "");
+  const parsedDraft = parseVideoUrl(videoUrlDraft);
 
   const TABS = [
     { id: "brand" as Tab, label: "برند", icon: Type },
@@ -129,13 +188,21 @@ export default function ContentPage() {
           <div className="rounded-2xl border border-border bg-surface p-5">
             <h2 className="text-base font-bold text-ink-800 mb-1">لوگو</h2>
             <p className="text-xs text-muted mb-4">
-              فرمت SVG، PNG یا JPG — حداکثر ۲ مگابایت
+              فرمت PNG، JPG یا SVG — حداکثر ۲ مگابایت
             </p>
 
             <div className="flex flex-wrap items-center gap-5">
               <div className="relative">
-                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-700 to-ink-900 border-2 border-gold-500/40 text-gold-400 font-bold text-3xl shadow-md">
-                  ق
+                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-700 to-ink-900 border-2 border-gold-500/40 text-gold-400 font-bold text-3xl shadow-md overflow-hidden">
+                  {content.logoUrl ? (
+                    <img
+                      src={content.logoUrl}
+                      alt="لوگو"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    "ق"
+                  )}
                 </div>
                 {content.logoUrl && (
                   <button
@@ -151,14 +218,12 @@ export default function ContentPage() {
               <div className="flex-1 min-w-[200px] space-y-2">
                 <label className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium hover:bg-brand-50 hover:border-brand-300 transition cursor-pointer">
                   <Upload className="h-4 w-4 text-brand-700" />
-                  آپلود لوگو
+                  {content.logoUrl ? "تغییر لوگو" : "آپلود لوگو"}
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/svg+xml,image/webp"
                     className="sr-only"
-                    onChange={() => {
-                      toast.success("آپلود شد", "لوگو با موفقیت بارگذاری شد.");
-                    }}
+                    onChange={handleLogoUpload}
                   />
                 </label>
                 <div className="text-[11px] text-muted">
@@ -221,8 +286,16 @@ export default function ContentPage() {
               پیش‌نمایش
             </h2>
             <div className="rounded-2xl bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900 p-8 text-center">
-              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-700 to-ink-900 border-2 border-gold-500/40 text-gold-400 font-bold text-xl mb-3">
-                ق
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-700 to-ink-900 border-2 border-gold-500/40 text-gold-400 font-bold text-xl mb-3 overflow-hidden">
+                {content.logoUrl ? (
+                  <img
+                    src={content.logoUrl}
+                    alt={content.brandName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  "ق"
+                )}
               </div>
               <div className="text-xl font-bold text-white">
                 {content.brandName || "نام برند"}
@@ -271,17 +344,31 @@ export default function ContentPage() {
           </div>
 
           {/* Current video preview */}
-          {content.heroVideoUrl ? (
+          {content.heroVideoUrl && parsedVideo.type !== "empty" ? (
             <div className="rounded-2xl border border-border bg-surface overflow-hidden">
               <div className="relative aspect-video bg-ink-900">
-                <video
-                  src={content.heroVideoUrl}
-                  className="absolute inset-0 h-full w-full object-cover"
-                  muted
-                  loop
-                  playsInline
-                  controls
-                />
+                {parsedVideo.type === "mp4" ? (
+                  <video
+                    src={parsedVideo.url}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    muted
+                    loop
+                    playsInline
+                    controls
+                  />
+                ) : parsedVideo.embedUrl ? (
+                  <iframe
+                    src={parsedVideo.embedUrl}
+                    className="absolute inset-0 h-full w-full"
+                    allow="autoplay; fullscreen; encrypted-media"
+                    allowFullScreen
+                    title="Video Preview"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-white/60 text-sm">
+                    پیش‌نمایش در دسترس نیست
+                  </div>
+                )}
               </div>
               <div className="p-5 flex flex-wrap items-center gap-3 justify-between border-t border-border">
                 <div className="flex items-center gap-3 min-w-0">
@@ -290,7 +377,10 @@ export default function ContentPage() {
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-bold text-ink-800">
-                      ویدیو فعال است
+                      {parsedVideo.type === "aparat" && "ویدیوی آپارات فعال است"}
+                      {parsedVideo.type === "youtube" && "ویدیوی یوتیوب فعال است"}
+                      {parsedVideo.type === "mp4" && "ویدیوی MP4 فعال است"}
+                      {parsedVideo.type === "unknown" && "ویدیو ثبت شده"}
                     </div>
                     <div
                       className="text-xs text-muted truncate max-w-[280px]"
@@ -333,35 +423,18 @@ export default function ContentPage() {
                 هیچ ویدیویی تنظیم نشده
               </h3>
               <p className="text-xs text-muted mb-4 max-w-md mx-auto leading-relaxed">
-                یک فایل ویدیو آپلود کنید یا لینک ویدیو (MP4) را وارد کنید
+                لینک ویدیو از MP4، آپارات یا یوتیوب را وارد کنید
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <button
-                  onClick={() => {
-                    setVideoUrlDraft("");
-                    setVideoModalOpen(true);
-                  }}
-                  className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-800 transition"
-                >
-                  <LinkIcon className="h-4 w-4" />
-                  افزودن با لینک
-                </button>
-                <label className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium hover:bg-brand-50 hover:border-brand-300 transition cursor-pointer">
-                  <Upload className="h-4 w-4 text-brand-700" />
-                  آپلود فایل
-                  <input
-                    type="file"
-                    accept="video/mp4,video/webm"
-                    className="sr-only"
-                    onChange={() => {
-                      toast.success(
-                        "آپلود شد",
-                        "ویدیو با موفقیت بارگذاری شد."
-                      );
-                    }}
-                  />
-                </label>
-              </div>
+              <button
+                onClick={() => {
+                  setVideoUrlDraft("");
+                  setVideoModalOpen(true);
+                }}
+                className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-800 transition"
+              >
+                <LinkIcon className="h-4 w-4" />
+                افزودن لینک ویدیو
+              </button>
             </div>
           )}
 
@@ -376,8 +449,16 @@ export default function ContentPage() {
 
             <div className="flex flex-wrap items-center gap-5">
               <div className="relative">
-                <div className="flex h-24 w-40 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 border border-border">
-                  <ImageIcon className="h-8 w-8 text-brand-700/50" />
+                <div className="flex h-24 w-40 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 border border-border overflow-hidden">
+                  {content.heroPosterUrl ? (
+                    <img
+                      src={content.heroPosterUrl}
+                      alt="Poster"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <ImageIcon className="h-8 w-8 text-brand-700/50" />
+                  )}
                 </div>
                 {content.heroPosterUrl && (
                   <button
@@ -393,21 +474,16 @@ export default function ContentPage() {
               <div className="flex-1 min-w-[200px]">
                 <label className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium hover:bg-brand-50 hover:border-brand-300 transition cursor-pointer">
                   <Upload className="h-4 w-4 text-brand-700" />
-                  آپلود تصویر
+                  {content.heroPosterUrl ? "تغییر تصویر" : "آپلود تصویر"}
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/webp"
                     className="sr-only"
-                    onChange={() => {
-                      toast.success(
-                        "آپلود شد",
-                        "تصویر با موفقیت بارگذاری شد."
-                      );
-                    }}
+                    onChange={handlePosterUpload}
                   />
                 </label>
                 <div className="mt-1 text-[11px] text-muted">
-                  پیشنهاد: ۱۹۲۰×۱۰۸۰ پیکسل
+                  پیشنهاد: ۱۹۲۰×۱۰۸۰ پیکسل — حداکثر ۲ مگابایت
                 </div>
               </div>
             </div>
@@ -417,9 +493,10 @@ export default function ContentPage() {
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
             <Sparkles className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
             <div className="text-xs text-amber-800 leading-relaxed">
-              <strong>نکته:</strong> برای بهترین کیفیت، ویدیو MP4 با حجم کمتر
-              از ۲۰ مگابایت و رزولوشن ۱۰۸۰p آپلود کنید. ویدیو به‌صورت خودکار
-              در پس‌زمینه پخش می‌شود.
+              <strong>نکته:</strong> می‌توانید از لینک‌های MP4 مستقیم، آپارات
+              (مثل <code dir="ltr" className="bg-amber-100 px-1 rounded">aparat.com/v/xxxxx</code>)،
+              یا یوتیوب استفاده کنید. برای بهترین کیفیت، MP4 با حجم کمتر از ۲۰
+              مگابایت توصیه می‌شود.
             </div>
           </div>
         </div>
@@ -699,7 +776,7 @@ export default function ContentPage() {
           setVideoUrlDraft("");
         }}
         title="آدرس ویدیو"
-        description="لینک مستقیم فایل MP4 را وارد کنید"
+        description="لینک MP4، آپارات یا یوتیوب را وارد کنید"
         size="md"
         footer={
           <div className="flex items-center justify-end gap-2">
@@ -731,22 +808,39 @@ export default function ContentPage() {
               value={videoUrlDraft}
               onChange={(e) => setVideoUrlDraft(e.target.value)}
               dir="ltr"
-              placeholder="https://example.com/video.mp4"
+              placeholder="https://www.aparat.com/v/xxxxx  یا  https://example.com/video.mp4"
               className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-left focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition"
             />
+            <div className="mt-1.5 text-[11px] text-muted leading-relaxed">
+              پشتیبانی از: آپارات، یوتیوب، فایل MP4/WebM مستقیم
+            </div>
           </div>
 
           {videoUrlDraft && (
             <div className="rounded-2xl border border-border bg-background overflow-hidden">
               <div className="relative aspect-video bg-ink-900">
-                <video
-                  src={videoUrlDraft}
-                  className="absolute inset-0 h-full w-full object-cover"
-                  muted
-                  loop
-                  playsInline
-                  controls
-                />
+                {parsedDraft.type === "mp4" ? (
+                  <video
+                    src={parsedDraft.url}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    muted
+                    loop
+                    playsInline
+                    controls
+                  />
+                ) : parsedDraft.embedUrl ? (
+                  <iframe
+                    src={parsedDraft.embedUrl}
+                    className="absolute inset-0 h-full w-full"
+                    allow="autoplay; fullscreen; encrypted-media"
+                    allowFullScreen
+                    title="Video Preview"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-white/60 text-sm">
+                    پیش‌نمایش در دسترس نیست
+                  </div>
+                )}
               </div>
             </div>
           )}

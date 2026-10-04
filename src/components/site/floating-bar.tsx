@@ -69,10 +69,18 @@ export function FloatingBar() {
 
   return (
     <div
-      className="fixed bottom-5 left-3 md:bottom-5 md:left-5 z-40 flex flex-col items-start gap-2.5"
+      dir="ltr"
+      className="z-40 flex flex-col items-start gap-2.5"
+      style={{
+        position: "fixed",
+        left: "16px",
+        bottom: "20px",
+        width: "fit-content",
+      }}
       onMouseEnter={() => setShowLabels(true)}
       onMouseLeave={() => setShowLabels(false)}
     >
+      {/* ═══ Items ═══ */}
       <div
         className={cn(
           "flex flex-col gap-2.5 transition-all duration-300",
@@ -83,22 +91,21 @@ export function FloatingBar() {
       >
         {items.map((item, idx) => {
           const isAI = item.id === "ai";
-          const content_ = (
+          const itemContent = (
             <>
               <span
                 className={cn(
-                  "flex h-11 w-11 items-center justify-center rounded-full shadow-lg transition",
+                  "flex h-11 w-11 items-center justify-center rounded-full shadow-lg transition shrink-0",
                   item.color
                 )}
                 style={
-                  isAI
-                    ? { background: "var(--theme-primary)" }
-                    : undefined
+                  isAI ? { background: "var(--theme-primary)" } : undefined
                 }
               >
                 {item.icon}
               </span>
               <span
+                dir="rtl"
                 className={cn(
                   "whitespace-nowrap rounded-lg bg-ink-800 px-3 py-1.5 text-xs font-medium text-white shadow-md transition-all",
                   showLabels
@@ -111,7 +118,8 @@ export function FloatingBar() {
             </>
           );
 
-          const wrapperClass = "flex items-center gap-2 group";
+          const wrapperClass =
+            "flex items-center gap-2 group";
 
           if (item.href) {
             return (
@@ -124,7 +132,7 @@ export function FloatingBar() {
                 style={{ transitionDelay: `${idx * 40}ms` }}
                 aria-label={item.label}
               >
-                {content_}
+                {itemContent}
               </a>
             );
           }
@@ -137,13 +145,13 @@ export function FloatingBar() {
               style={{ transitionDelay: `${idx * 40}ms` }}
               aria-label={item.label}
             >
-              {content_}
+              {itemContent}
             </button>
           );
         })}
       </div>
 
-      {/* Toggle Button */}
+      {/* ═══ Toggle Button ═══ */}
       <button
         onClick={() => setIsOpen((v) => !v)}
         className={cn(

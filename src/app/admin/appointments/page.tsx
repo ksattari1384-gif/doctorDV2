@@ -16,6 +16,8 @@ import {
   Edit,
   Trash2,
   AlertCircle,
+  X,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/admin/page-header";
@@ -31,13 +33,31 @@ import {
   type AppointmentStatus,
 } from "@/lib/stores/admin-store";
 
-const FILTERS = [
+// ═══ Filter Options ═══
+
+const STATUS_FILTERS = [
   { id: "all", label: "همه" },
   { id: "pending", label: "در انتظار تأیید" },
   { id: "contact_required", label: "نیاز به تماس" },
   { id: "confirmed", label: "قطعی" },
   { id: "completed", label: "انجام شده" },
   { id: "cancelled", label: "لغو شده" },
+];
+
+const DATE_FILTERS = [
+  { id: "all", label: "همه‌ی تاریخ‌ها" },
+  { id: "today", label: "امروز" },
+  { id: "yesterday", label: "دیروز" },
+  { id: "this-week", label: "این هفته" },
+];
+
+const SERVICE_FILTERS = [
+  { id: "all", label: "همه‌ی خدمات" },
+  { id: "ایمپلنت دندان", label: "ایمپلنت دندان" },
+  { id: "لمینت سرامیکی", label: "لمینت سرامیکی" },
+  { id: "ارتودنسی", label: "ارتودنسی" },
+  { id: "عصب‌کشی", label: "عصب‌کشی" },
+  { id: "جرم‌گیری", label: "جرم‌گیری" },
 ];
 
 export default function AppointmentsPage() {
@@ -53,6 +73,11 @@ export default function AppointmentsPage() {
   // ═══ UI State ═══
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState("all");
+  const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [serviceFilter, setServiceFilter] = useState("all");
+
   const [selectedAptId, setSelectedAptId] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{
     type: "approve" | "reject" | "delete";
@@ -61,7 +86,7 @@ export default function AppointmentsPage() {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [newModalOpen, setNewModalOpen] = useState(false);
 
-  // ═══ Derived from store (همیشه تازه) ═══
+  // ═══ Derived ═══
   const selectedApt = useMemo(
     () => appointments.find((a) => a.id === selectedAptId) || null,
     [appointments, selectedAptId]
@@ -78,7 +103,35 @@ export default function AppointmentsPage() {
   // ═══ Filtered ═══
   const filtered = useMemo(() => {
     return appointments.filter((apt) => {
+      // فیلتر وضعیت
       if (activeFilter !== "all" && apt.status !== activeFilter) return false;
+
+      // فیلتر تاریخ
+      if (dateFilter !== "all") {
+        if (dateFilter === "today" && apt.date !== "امروز") return false;
+        if (dateFilter === "yesterday" && apt.date !== "دیروز") return false;
+        if (dateFilter === "this-week") {
+          // این هفته = امروز + دیروز + ۵ روز آینده (تقریب ساده)
+          const validDates = [
+            "امروز",
+            "دیروز",
+            "فردا",
+            "یک‌شنبه",
+            "دوشنبه",
+            "سه‌شنبه",
+            "چهارشنبه",
+            "پنجشنبه",
+          ];
+          if (!validDates.includes(apt.date)) return false;
+        }
+      }
+
+      // فیلتر خدمت
+      if (serviceFilter !== "all" && apt.service !== serviceFilter) {
+        return false;
+      }
+
+      // جستجو
       if (searchQuery.trim()) {
         const q = searchQuery.trim().toLowerCase();
         return (
@@ -90,7 +143,7 @@ export default function AppointmentsPage() {
       }
       return true;
     });
-  }, [appointments, activeFilter, searchQuery]);
+  }, [appointments, activeFilter, dateFilter, serviceFilter, searchQuery]);
 
   // ═══ Counts ═══
   const counts = useMemo(() => {
@@ -106,18 +159,23 @@ export default function AppointmentsPage() {
     };
   }, [appointments]);
 
+  // ═══ Active Filter Count ═══
+  const activeFiltersCount = [
+    activeFilter !== "all",
+    dateFilter !== "all",
+    serviceFilter !== "all",
+  ].filter(Boolean).length;
+
   // ═══ Actions ═══
   const handleApprove = async () => {
     if (!confirmTarget) return;
     setConfirmLoading(true);
     await new Promise((r) => setTimeout(r, 600));
-
     updateAppointmentStatus(confirmTarget.id, "confirmed");
     toast.success(
       "نوبت تأیید شد",
       `نوبت ${confirmTarget.patient} با موفقیت تأیید شد.`
     );
-
     setConfirmLoading(false);
     setConfirmAction(null);
   };
@@ -126,10 +184,8 @@ export default function AppointmentsPage() {
     if (!confirmTarget) return;
     setConfirmLoading(true);
     await new Promise((r) => setTimeout(r, 600));
-
     updateAppointmentStatus(confirmTarget.id, "rejected");
     toast.error("نوبت رد شد", `نوبت ${confirmTarget.patient} رد شد.`);
-
     setConfirmLoading(false);
     setConfirmAction(null);
   };
@@ -138,10 +194,8 @@ export default function AppointmentsPage() {
     if (!confirmTarget) return;
     setConfirmLoading(true);
     await new Promise((r) => setTimeout(r, 600));
-
     deleteAppointment(confirmTarget.id);
     toast.success("نوبت حذف شد", "نوبت مورد نظر از لیست حذف شد.");
-
     setConfirmLoading(false);
     setConfirmAction(null);
     setSelectedAptId(null);
@@ -151,6 +205,14 @@ export default function AppointmentsPage() {
     if (confirmAction?.type === "approve") return handleApprove();
     if (confirmAction?.type === "reject") return handleReject();
     if (confirmAction?.type === "delete") return handleDelete();
+  };
+
+  const clearAllFilters = () => {
+    setActiveFilter("all");
+    setDateFilter("all");
+    setServiceFilter("all");
+    setSearchQuery("");
+    toast.info("پاک شد", "همه‌ی فیلترها پاک شدن.");
   };
 
   return (
@@ -186,8 +248,10 @@ export default function AppointmentsPage() {
         }
       />
 
+      {/* ═══ Filter Bar ═══ */}
       <div className="rounded-2xl border border-border bg-surface p-4 space-y-4">
         <div className="flex flex-wrap items-center gap-3">
+          {/* Search */}
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
             <input
@@ -199,20 +263,155 @@ export default function AppointmentsPage() {
             />
           </div>
 
-          <button className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium hover:bg-brand-50 hover:border-brand-200 transition">
-            <Calendar className="h-4 w-4 text-brand-700" />
-            این هفته
-            <ChevronDown className="h-3 w-3 text-muted" />
-          </button>
+          {/* Date Filter */}
+          <div className="relative">
+            <button
+              onClick={() => setDateDropdownOpen((v) => !v)}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition",
+                dateFilter !== "all"
+                  ? "border-brand-500 bg-brand-50 text-brand-800"
+                  : "border-border bg-background hover:bg-brand-50 hover:border-brand-200"
+              )}
+            >
+              <Calendar className="h-4 w-4 text-brand-700" />
+              {DATE_FILTERS.find((d) => d.id === dateFilter)?.label}
+              <ChevronDown
+                className={cn(
+                  "h-3 w-3 text-muted transition",
+                  dateDropdownOpen && "rotate-180"
+                )}
+              />
+            </button>
 
-          <button className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium hover:bg-brand-50 hover:border-brand-200 transition">
+            {dateDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setDateDropdownOpen(false)}
+                />
+                <div className="absolute top-full right-0 mt-2 w-48 rounded-xl border border-border bg-surface shadow-elevated p-1.5 z-50">
+                  {DATE_FILTERS.map((d) => (
+                    <button
+                      key={d.id}
+                      onClick={() => {
+                        setDateFilter(d.id);
+                        setDateDropdownOpen(false);
+                      }}
+                      className={cn(
+                        "w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-right transition",
+                        dateFilter === d.id
+                          ? "bg-brand-50 text-brand-800 font-medium"
+                          : "text-foreground/80 hover:bg-background"
+                      )}
+                    >
+                      <span>{d.label}</span>
+                      {dateFilter === d.id && (
+                        <Check className="h-4 w-4 text-brand-700" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Filter Button */}
+          <button
+            onClick={() => setFilterPanelOpen((v) => !v)}
+            className={cn(
+              "relative inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition",
+              activeFiltersCount > 0
+                ? "border-brand-500 bg-brand-50 text-brand-800"
+                : "border-border bg-background hover:bg-brand-50 hover:border-brand-200"
+            )}
+          >
             <Filter className="h-4 w-4 text-brand-700" />
             فیلتر
+            {activeFiltersCount > 0 && (
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-700 text-white text-[10px] font-bold">
+                {activeFiltersCount}
+              </span>
+            )}
           </button>
         </div>
 
+        {/* ═══ Expanded Filter Panel ═══ */}
+        {filterPanelOpen && (
+          <div className="rounded-xl border border-border bg-background p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-ink-800">
+                فیلتر پیشرفته
+              </h3>
+              <button
+                onClick={clearAllFilters}
+                className="text-xs font-medium text-red-600 hover:text-red-700 transition"
+              >
+                پاک کردن همه
+              </button>
+            </div>
+
+            {/* Service Filter */}
+            <div>
+              <label className="block text-xs font-medium text-muted mb-2">
+                خدمت
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {SERVICE_FILTERS.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setServiceFilter(s.id)}
+                    className={cn(
+                      "rounded-full border px-3 py-1.5 text-xs font-medium transition",
+                      serviceFilter === s.id
+                        ? "border-brand-500 bg-brand-50 text-brand-800"
+                        : "border-border bg-surface text-muted hover:border-brand-300"
+                    )}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Active Filters Display */}
+            {activeFiltersCount > 0 && (
+              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border">
+                <span className="text-xs text-muted">
+                  فیلترهای فعال:
+                </span>
+                {activeFilter !== "all" && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 px-2.5 py-1 text-[11px] font-medium text-brand-800">
+                    {STATUS_FILTERS.find((s) => s.id === activeFilter)?.label}
+                    <button onClick={() => setActiveFilter("all")}>
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {dateFilter !== "all" && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 px-2.5 py-1 text-[11px] font-medium text-brand-800">
+                    {DATE_FILTERS.find((d) => d.id === dateFilter)?.label}
+                    <button onClick={() => setDateFilter("all")}>
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+                {serviceFilter !== "all" && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 px-2.5 py-1 text-[11px] font-medium text-brand-800">
+                    {serviceFilter}
+                    <button onClick={() => setServiceFilter("all")}>
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ Status Tabs ═══ */}
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
-          {FILTERS.map((f) => {
+          {STATUS_FILTERS.map((f) => {
             const count = counts[f.id as keyof typeof counts] ?? 0;
             const isActive = activeFilter === f.id;
             return (
@@ -241,6 +440,7 @@ export default function AppointmentsPage() {
         </div>
       </div>
 
+      {/* ═══ Table ═══ */}
       <div className="rounded-2xl border border-border bg-surface overflow-hidden shadow-soft">
         <div className="hidden md:grid grid-cols-12 gap-3 items-center border-b border-border bg-background/50 px-5 py-3 text-xs font-bold text-muted">
           <div className="col-span-3">بیمار</div>
@@ -297,7 +497,10 @@ export default function AppointmentsPage() {
                   <>
                     <button
                       onClick={() =>
-                        setConfirmAction({ type: "approve", appointmentId: apt.id })
+                        setConfirmAction({
+                          type: "approve",
+                          appointmentId: apt.id,
+                        })
                       }
                       className="rounded-lg bg-emerald-500 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-emerald-600 transition"
                     >
@@ -305,7 +508,10 @@ export default function AppointmentsPage() {
                     </button>
                     <button
                       onClick={() =>
-                        setConfirmAction({ type: "reject", appointmentId: apt.id })
+                        setConfirmAction({
+                          type: "reject",
+                          appointmentId: apt.id,
+                        })
                       }
                       className="rounded-lg bg-red-50 px-3 py-1.5 text-[11px] font-bold text-red-600 hover:bg-red-100 transition"
                     >
@@ -329,15 +535,27 @@ export default function AppointmentsPage() {
           <EmptyState
             title="نوبتی پیدا نشد"
             description={
-              searchQuery
-                ? `هیچ نوبتی با عبارت «${searchQuery}» مطابقت ندارد.`
-                : "نوبتی با این فیلتر وجود ندارد."
+              searchQuery || activeFiltersCount > 0
+                ? "با فیلترهای فعلی نوبتی پیدا نشد. فیلترها را تغییر دهید."
+                : "هنوز نوبتی ثبت نشده است."
+            }
+            action={
+              activeFiltersCount > 0 || searchQuery ? (
+                <button
+                  onClick={clearAllFilters}
+                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-5 py-2.5 text-sm font-medium hover:bg-surface transition"
+                >
+                  <X className="h-4 w-4" />
+                  پاک کردن فیلترها
+                </button>
+              ) : undefined
             }
           />
         )}
       </div>
 
-      <div className="flex items-center justify-between text-xs text-muted">
+      {/* Footer info */}
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
         <span>
           نمایش <strong className="text-ink-800">{filtered.length}</strong> از{" "}
           <strong className="text-ink-800">{appointments.length}</strong> نوبت
@@ -345,6 +563,7 @@ export default function AppointmentsPage() {
         <span>آخرین به‌روزرسانی: چند لحظه پیش</span>
       </div>
 
+      {/* ═══ Drawer ═══ */}
       <Drawer
         open={!!selectedApt}
         onClose={() => setSelectedAptId(null)}
@@ -519,6 +738,7 @@ export default function AppointmentsPage() {
         )}
       </Drawer>
 
+      {/* ═══ Confirm Dialog ═══ */}
       <ConfirmDialog
         open={!!confirmAction}
         onClose={() => setConfirmAction(null)}
@@ -556,6 +776,7 @@ export default function AppointmentsPage() {
         }
       />
 
+      {/* ═══ New Appointment Modal ═══ */}
       <Modal
         open={newModalOpen}
         onClose={() => setNewModalOpen(false)}
