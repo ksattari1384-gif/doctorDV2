@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   ArrowRight,
@@ -14,6 +16,7 @@ import {
   Users,
   Star,
 } from "lucide-react";
+import { useAdminStore } from "@/lib/stores/admin-store";
 
 const STATS = [
   { value: "+۱۵", label: "سال تجربه" },
@@ -53,10 +56,12 @@ const HIGHLIGHTS = [
 ];
 
 export default function AboutPage() {
+  const content = useAdminStore((s) => s.content);
+
   return (
     <div className="bg-background min-h-screen pb-20">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900 pt-8 pb-16 md:pb-20 rounded-b-[32px] md:rounded-b-[48px]">
+      {/* ═══ Header ═══ */}
+      <div className="bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900 pt-24 md:pt-28 pb-16 md:pb-20 rounded-b-[32px] md:rounded-b-[48px]">
         <div className="container mx-auto px-4 md:px-6">
           <Link
             href="/"
@@ -67,26 +72,35 @@ export default function AboutPage() {
           </Link>
 
           <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-4 py-2 text-sm font-medium text-white/95 mb-5">
-            <Sparkles className="h-4 w-4 text-gold-400" />
+            <Sparkles
+              className="h-4 w-4"
+              style={{ color: "var(--theme-accent)" }}
+            />
             <span>درباره ما</span>
           </div>
 
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
             مطب دندانپزشکی{" "}
-            <span className="bg-gradient-to-l from-gold-400 via-gold-500 to-gold-600 bg-clip-text text-transparent">
-              دکتر قره‌داغی
+            <span
+              className="bg-clip-text text-transparent"
+              style={{
+                backgroundImage:
+                  "linear-gradient(to left, var(--theme-accent), var(--theme-accent))",
+              }}
+            >
+              {content.brandName}
             </span>
           </h1>
 
           <p className="mt-4 max-w-2xl text-base md:text-lg text-white/80 leading-relaxed">
-            ما در مطب دکتر قره‌داغی، با تکیه بر تجربه‌ی بیش از ۱۵ ساله و
+            ما در مطب {content.brandName}، با تکیه بر تجربه‌ی بیش از ۱۵ ساله و
             استفاده از جدیدترین تکنولوژی‌ها، لبخندی زیبا و سالم به شما هدیه
             می‌دهیم.
           </p>
         </div>
       </div>
 
-      {/* Stats */}
+      {/* ═══ Stats ═══ */}
       <div className="container mx-auto px-4 md:px-6 -mt-8 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {STATS.map((s) => (
@@ -94,7 +108,10 @@ export default function AboutPage() {
               key={s.label}
               className="rounded-2xl bg-surface border border-border p-5 text-center shadow-soft"
             >
-              <div className="text-2xl md:text-3xl font-bold text-brand-700">
+              <div
+                className="text-2xl md:text-3xl font-bold"
+                style={{ color: "var(--theme-primary)" }}
+              >
                 {s.value}
               </div>
               <div className="mt-1 text-xs md:text-sm text-muted">
@@ -105,17 +122,22 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Doctor intro */}
+      {/* ═══ Doctor intro ═══ */}
       <div className="container mx-auto px-4 md:px-6 mt-12 md:mt-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          {/* Image placeholder */}
+          {/* Image */}
           <div className="relative">
-            <div className="absolute -inset-4 bg-gradient-to-tr from-brand-200/50 to-gold-200/30 rounded-3xl blur-2xl" />
+            <div
+              className="absolute -inset-4 rounded-3xl blur-2xl opacity-50"
+              style={{
+                background: `linear-gradient(135deg, var(--theme-primary-soft), var(--theme-accent))`,
+              }}
+            />
             <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center">
               <div className="text-center">
                 <div className="text-8xl mb-4">👨‍⚕️</div>
                 <div className="text-sm text-brand-800 font-medium">
-                  عکس دکتر اینجا قرار می‌گیرد
+                  عکس پزشک اینجا قرار می‌گیرد
                 </div>
               </div>
             </div>
@@ -123,24 +145,30 @@ export default function AboutPage() {
 
           {/* Content */}
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-brand-100 px-4 py-2 text-sm font-medium text-brand-800 mb-4">
+            <div
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium mb-4"
+              style={{
+                background: "var(--theme-primary-soft)",
+                color: "var(--theme-primary)",
+              }}
+            >
               <GraduationCap className="h-4 w-4" />
               درباره پزشک
             </div>
 
             <h2 className="text-3xl md:text-4xl font-bold text-ink-800 leading-tight">
-              دکتر <span className="text-brand-700">قره‌داغی</span>
+              {content.brandName}
             </h2>
 
             <p className="mt-2 text-base text-muted font-medium">
-              متخصص دندانپزشکی زیبایی و ترمیمی
+              {content.brandSubtitle}
             </p>
 
             <p className="mt-6 text-base text-foreground/80 leading-relaxed">
               با بیش از ۱۵ سال تجربه در زمینه‌ی دندانپزشکی زیبایی، ترمیمی و
-              ایمپلنت، دکتر قره‌داغی توانسته هزاران لبخند زیبا و سالم به
-              بیماران هدیه کند. تمرکز ایشان بر درمان‌های دقیق، بدون درد و با
-              کمترین زمان بهبودی است.
+              ایمپلنت، تیم ما توانسته هزاران لبخند زیبا و سالم به بیماران
+              هدیه کند. تمرکز ما بر درمان‌های دقیق، بدون درد و با کمترین
+              زمان بهبودی است.
             </p>
 
             <ul className="mt-6 space-y-3">
@@ -149,7 +177,10 @@ export default function AboutPage() {
                   key={item}
                   className="flex items-start gap-3 text-sm text-foreground/80"
                 >
-                  <CheckCircle2 className="h-5 w-5 text-brand-600 shrink-0 mt-0.5" />
+                  <CheckCircle2
+                    className="h-5 w-5 shrink-0 mt-0.5"
+                    style={{ color: "var(--theme-primary)" }}
+                  />
                   <span>{item}</span>
                 </li>
               ))}
@@ -158,16 +189,26 @@ export default function AboutPage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/booking"
-                className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-6 py-3 text-sm font-bold text-white hover:bg-brand-800 transition shadow-sm"
+                className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition shadow-sm"
+                style={{ background: "var(--theme-primary)" }}
               >
                 رزرو نوبت
                 <ArrowLeft className="h-4 w-4" />
               </Link>
               <a
-                href="tel:+982100000000"
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-6 py-3 text-sm font-medium hover:bg-brand-50 transition"
+                href={`tel:${content.phone}`}
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-6 py-3 text-sm font-medium transition"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--theme-primary-soft)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "";
+                }}
               >
-                <Phone className="h-4 w-4 text-brand-700" />
+                <Phone
+                  className="h-4 w-4"
+                  style={{ color: "var(--theme-primary)" }}
+                />
                 تماس تلفنی
               </a>
             </div>
@@ -175,18 +216,25 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Values */}
+      {/* ═══ Values ═══ */}
       <div className="container mx-auto px-4 md:px-6 mt-20 md:mt-28">
         <div className="max-w-2xl mx-auto text-center mb-12">
-          <div className="inline-flex items-center gap-2 rounded-full bg-brand-100 px-4 py-2 text-sm font-medium text-brand-800 mb-4">
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium mb-4"
+            style={{
+              background: "var(--theme-primary-soft)",
+              color: "var(--theme-primary)",
+            }}
+          >
             <Star className="h-4 w-4" />
             ارزش‌های ما
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-ink-800 leading-tight">
-            تعهد ما به <span className="text-brand-700">شما</span>
+            تعهد ما به{" "}
+            <span style={{ color: "var(--theme-primary)" }}>شما</span>
           </h2>
           <p className="mt-4 text-base text-muted leading-relaxed">
-            آنچه مطب دکتر قره‌داغی را متفاوت می‌کند
+            آنچه مطب {content.brandName} را متفاوت می‌کند
           </p>
         </div>
 
@@ -196,9 +244,21 @@ export default function AboutPage() {
             return (
               <div
                 key={v.title}
-                className="rounded-2xl border border-border bg-surface p-6 hover:border-brand-200 hover:shadow-soft transition-all"
+                className="rounded-2xl border border-border bg-surface p-6 transition-all hover:shadow-soft"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "var(--theme-primary)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "";
+                }}
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+                <div
+                  className="flex h-12 w-12 items-center justify-center rounded-xl"
+                  style={{
+                    background: "var(--theme-primary-soft)",
+                    color: "var(--theme-primary)",
+                  }}
+                >
                   <Icon className="h-6 w-6" />
                 </div>
                 <h3 className="mt-4 text-base font-bold text-ink-800">
@@ -213,24 +273,36 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Contact info */}
+      {/* ═══ Contact info ═══ */}
       <div className="container mx-auto px-4 md:px-6 mt-20 md:mt-28">
         <div className="rounded-3xl bg-gradient-to-br from-cream-100 via-cream-200 to-cream-100 p-6 md:p-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink-900 text-gold-400">
+              <div
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                style={{
+                  background: "var(--theme-primary)",
+                  color: "var(--theme-accent)",
+                }}
+              >
                 <MapPin className="h-5 w-5" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-ink-800 mb-1">آدرس</h3>
                 <p className="text-xs text-ink-800/70 leading-relaxed">
-                  تهران، خیابان ولیعصر، بالاتر از پارک ساعی، پلاک ۱۲۳، طبقه ۲
+                  {content.address}
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink-900 text-gold-400">
+              <div
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                style={{
+                  background: "var(--theme-primary)",
+                  color: "var(--theme-accent)",
+                }}
+              >
                 <Phone className="h-5 w-5" />
               </div>
               <div>
@@ -238,17 +310,29 @@ export default function AboutPage() {
                   تلفن تماس
                 </h3>
                 <a
-                  href="tel:+982100000000"
-                  className="text-xs text-ink-800/70 hover:text-brand-700 transition"
+                  href={`tel:${content.phone}`}
+                  className="text-xs text-ink-800/70 transition"
                   dir="ltr"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "var(--theme-primary)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "";
+                  }}
                 >
-                  ۰۲۱-۰۰۰۰۰۰۰۰
+                  {content.phone}
                 </a>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink-900 text-gold-400">
+              <div
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                style={{
+                  background: "var(--theme-primary)",
+                  color: "var(--theme-accent)",
+                }}
+              >
                 <Clock className="h-5 w-5" />
               </div>
               <div>
@@ -256,9 +340,7 @@ export default function AboutPage() {
                   ساعات کاری
                 </h3>
                 <p className="text-xs text-ink-800/70 leading-relaxed">
-                  شنبه تا چهارشنبه: ۹ تا ۱۹
-                  <br />
-                  پنجشنبه: ۹ تا ۱۴
+                  {content.workingHoursShort}
                 </p>
               </div>
             </div>

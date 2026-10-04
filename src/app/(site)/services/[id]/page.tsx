@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useParams, notFound } from "next/navigation";
 import {
   ArrowRight,
   Clock,
@@ -10,128 +12,31 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
+import { useMemo } from "react";
+import { useAdminStore } from "@/lib/stores/admin-store";
 
-const SERVICES: Record<
-  string,
-  {
-    name: string;
-    description: string;
-    longDescription: string;
-    price: string;
-    duration: string;
-    emoji: string;
-    category: string;
-    features: string[];
-  }
-> = {
-  implant: {
-    name: "ایمپلنت دندان",
-    description: "جایگزینی دندان‌های از دست رفته با ایمپلنت تیتانیومی",
-    longDescription:
-      "ایمپلنت دندان روشی مدرن برای جایگزینی دندان‌های از دست رفته است. در این روش، یک پایه‌ی تیتانیومی در استخوان فک کاشته می‌شود و پس از جوش خوردن با استخوان، تاج دندان روی آن نصب می‌شود. نتیجه، دندانی است که هم از نظر ظاهری و هم از نظر عملکردی کاملاً شبیه دندان طبیعی است.",
-    price: "۱۵,۰۰۰,۰۰۰",
-    duration: "۶۰ دقیقه",
-    emoji: "🦷",
-    category: "تخصصی",
-    features: [
-      "بدون آسیب به دندان‌های مجاور",
-      "ماندگاری بالا (بیش از ۲۰ سال)",
-      "ظاهر کاملاً طبیعی",
-      "بدون درد در حین و بعد از عمل",
-    ],
-  },
-  laminate: {
-    name: "لمینت سرامیکی",
-    description: "طراحی لبخند با لمینت‌های نازک و طبیعی",
-    longDescription:
-      "لمینت‌های سرامیکی لایه‌های نازکی هستند که روی سطح دندان‌های جلویی چسبانده می‌شوند. این روش برای اصلاح رنگ، شکل و اندازه‌ی دندان‌ها استفاده می‌شود و نتیجه‌ای طبیعی و زیبا می‌دهد.",
-    price: "۸,۰۰۰,۰۰۰",
-    duration: "۹۰ دقیقه",
-    emoji: "💎",
-    category: "زیبایی",
-    features: [
-      "ظاهر طبیعی و شفاف",
-      "مقاوم در برابر لکه",
-      "کمترین آسیب به دندان",
-      "نتیجه‌ی سریع",
-    ],
-  },
-  orthodontics: {
-    name: "ارتودنسی",
-    description: "مرتب‌سازی دندان‌ها با براکت‌های نامرئی",
-    longDescription:
-      "ارتودنسی روشی برای مرتب‌سازی دندان‌های نامرتب و اصلاح ناهنجاری‌های فکی است. با استفاده از براکت‌های ثابت یا پلاک‌های متحرک، دندان‌ها به تدریج به موقعیت صحیح منتقل می‌شوند.",
-    price: "مشاوره رایگان",
-    duration: "۴۵ دقیقه",
-    emoji: "✨",
-    category: "تخصصی",
-    features: [
-      "مناسب برای کودکان و بزرگسالان",
-      "براکت‌های سرامیکی و نامرئی",
-      "پیگیری منظم روند درمان",
-    ],
-  },
-  "root-canal": {
-    name: "عصب‌کشی",
-    description: "درمان ریشه با تجهیزات مدرن و بدون درد",
-    longDescription:
-      "عصب‌کشی یا درمان ریشه، روشی برای نجات دندانی است که پالپ آن آسیب دیده یا عفونی شده. با استفاده از تجهیزات مدرن و بی‌حسی موضعی، این درمان به طور کامل و بدون درد انجام می‌شود.",
-    price: "۲,۵۰۰,۰۰۰",
-    duration: "۶۰ دقیقه",
-    emoji: "🩺",
-    category: "درمانی",
-    features: [
-      "بدون درد با بی‌حسی موضعی",
-      "استفاده از دستگاه‌های روتاری",
-      "نجات دندان از کشیدن",
-    ],
-  },
-  scaling: {
-    name: "جرم‌گیری",
-    description: "پاک‌سازی تخصصی جرم و پلاک با دستگاه اولتراسونیک",
-    longDescription:
-      "جرم‌گیری روشی برای پاک‌سازی جرم و پلاک از سطح دندان‌ها و زیر لثه است. این کار با استفاده از دستگاه اولتراسونیک انجام می‌شود و به پیشگیری از بیماری‌های لثه کمک می‌کند.",
-    price: "۸۰۰,۰۰۰",
-    duration: "۳۰ دقیقه",
-    emoji: "🛡️",
-    category: "پیشگیری",
-    features: [
-      "پیشگیری از بیماری لثه",
-      "حس تمیزی و تازگی",
-      "بدون آسیب به مینای دندان",
-    ],
-  },
-  pediatric: {
-    name: "دندانپزشکی کودکان",
-    description: "درمان آرام و دوستانه برای کوچک‌ترها",
-    longDescription:
-      "دندانپزشکی کودکان نیازمند رویکردی خاص و آرام است تا کودک تجربه‌ای مثبت از دندانپزشکی داشته باشد. تیم ما با صبر و حوصله با کودکان کار می‌کند و محیطی شاد و امن فراهم می‌کند.",
-    price: "۵۰۰,۰۰۰",
-    duration: "۳۰ دقیقه",
-    emoji: "🧒",
-    category: "کودکان",
-    features: [
-      "محیط شاد و امن",
-      "برخورد آرام و دوستانه",
-      "آموزش بهداشت دهان به کودک",
-    ],
-  },
-};
+export default function ServiceDetailPage() {
+  const params = useParams();
+  const slug = params?.id as string;
 
-export default async function ServiceDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const service = SERVICES[id];
+  // ═══ Store ═══
+  const services = useAdminStore((s) => s.services);
+  const content = useAdminStore((s) => s.content);
 
-  if (!service) {
+  // ═══ Find service by slug ═══
+  const service = useMemo(
+    () => services.find((s) => s.slug === slug),
+    [services, slug]
+  );
+
+  // اگه خدمت پیدا نشد یا غیرفعال بود
+  if (!service || !service.isActive) {
     notFound();
   }
 
   return (
-    <div className="bg-background min-h-screen pb-40">
+    <div className="bg-background min-h-screen pb-56 md:pb-64">
+      {/* ═══ Hero ═══════════════════════════════ */}
       <div className="relative h-[280px] md:h-[400px] bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900">
         <div className="absolute inset-0 bg-gradient-to-b from-ink-900/40 via-transparent to-ink-900/80" />
         <div className="absolute inset-0 flex items-center justify-center">
@@ -140,8 +45,9 @@ export default async function ServiceDetailPage({
           </div>
         </div>
 
+        {/* Back button */}
         <Link
-          href="/"
+          href="/services"
           className="absolute top-4 right-4 md:top-6 md:right-6 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition"
           aria-label="بازگشت"
         >
@@ -149,19 +55,61 @@ export default async function ServiceDetailPage({
         </Link>
       </div>
 
+      {/* ═══ Content ═══════════════════════════ */}
       <div className="container mx-auto px-4 md:px-6 -mt-12 relative z-10">
         <div className="rounded-3xl bg-surface border border-border shadow-elevated p-5 md:p-8">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-800">
+          {/* Category + Stars */}
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium"
+              style={{
+                background: "var(--theme-primary-soft)",
+                color: "var(--theme-primary)",
+              }}
+            >
               <Sparkles className="h-3 w-3" />
-              {service.category}
+              {service.category === "cosmetic" && "زیبایی"}
+              {service.category === "therapeutic" && "درمانی"}
+              {service.category === "surgery" && "جراحی"}
+              {service.category === "preventive" && "پیشگیری"}
+              {service.category === "kids" && "کودکان"}
             </span>
-            <span className="inline-flex items-center gap-0.5 text-gold-500">
-              <Star className="h-3.5 w-3.5 fill-gold-500" />
-              <Star className="h-3.5 w-3.5 fill-gold-500" />
-              <Star className="h-3.5 w-3.5 fill-gold-500" />
-              <Star className="h-3.5 w-3.5 fill-gold-500" />
-              <Star className="h-3.5 w-3.5 fill-gold-500" />
+            {service.isFeatured && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium"
+                style={{
+                  background: "var(--theme-accent)",
+                  color: "#0b1f1d",
+                }}
+              >
+                <Star className="h-3 w-3" />
+                منتخب
+              </span>
+            )}
+            <span
+              className="inline-flex items-center gap-0.5"
+              style={{ color: "var(--theme-accent)" }}
+            >
+              <Star
+                className="h-3.5 w-3.5"
+                fill="currentColor"
+              />
+              <Star
+                className="h-3.5 w-3.5"
+                fill="currentColor"
+              />
+              <Star
+                className="h-3.5 w-3.5"
+                fill="currentColor"
+              />
+              <Star
+                className="h-3.5 w-3.5"
+                fill="currentColor"
+              />
+              <Star
+                className="h-3.5 w-3.5"
+                fill="currentColor"
+              />
             </span>
           </div>
 
@@ -173,6 +121,7 @@ export default async function ServiceDetailPage({
             {service.longDescription}
           </p>
 
+          {/* Info boxes */}
           <div className="mt-6 grid grid-cols-2 gap-3">
             <div className="rounded-2xl bg-cream-200 p-4">
               <div className="flex items-center gap-2 text-xs text-ink-800/70 mb-1">
@@ -180,7 +129,7 @@ export default async function ServiceDetailPage({
                 مدت زمان
               </div>
               <div className="text-base md:text-lg font-bold text-ink-800">
-                {service.duration}
+                {service.duration} دقیقه
               </div>
             </div>
             <div className="rounded-2xl bg-cream-200 p-4">
@@ -189,8 +138,10 @@ export default async function ServiceDetailPage({
                 هزینه
               </div>
               <div className="text-base md:text-lg font-bold text-ink-800">
-                {service.price}
-                {service.price !== "مشاوره رایگان" && (
+                {service.price
+                  ? service.price.toLocaleString("fa-IR")
+                  : "مشاوره رایگان"}
+                {service.price && (
                   <span className="text-xs font-normal text-ink-800/50 mr-1">
                     تومان
                   </span>
@@ -199,60 +150,82 @@ export default async function ServiceDetailPage({
             </div>
           </div>
 
-          <div className="mt-6">
-            <h3 className="text-base font-bold text-ink-800 mb-3">
-              ویژگی‌های این خدمت
-            </h3>
-            <ul className="space-y-2.5">
-              {service.features.map((f) => (
-                <li
-                  key={f}
-                  className="flex items-start gap-2.5 text-sm text-foreground/80"
-                >
-                  <ShieldCheck className="h-5 w-5 text-brand-600 shrink-0 mt-0.5" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
+          {/* Payment method */}
+          <div className="mt-4 rounded-2xl bg-cream-200 p-4 flex items-center justify-between">
+            <span className="text-xs text-ink-800/70">روش پرداخت</span>
+            <span className="text-sm font-bold text-ink-800">
+              {service.paymentMethod === "ONLINE" && "پرداخت آنلاین"}
+              {service.paymentMethod === "IN_PERSON" && "پرداخت در محل"}
+              {service.paymentMethod === "BOTH" && "آنلاین یا در محل"}
+            </span>
           </div>
 
+          {/* Divider */}
           <div className="my-6 border-t border-border" />
 
+          {/* Contact options */}
           <div className="grid grid-cols-2 gap-3">
             <a
-              href="tel:+982100000000"
-              className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium hover:bg-brand-50 transition"
+              href={`tel:${content.phone}`}
+              className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium transition"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--theme-primary-soft)";
+                e.currentTarget.style.borderColor = "var(--theme-primary)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "";
+                e.currentTarget.style.borderColor = "";
+              }}
             >
-              <Phone className="h-4 w-4 text-brand-700" />
+              <Phone
+                className="h-4 w-4"
+                style={{ color: "var(--theme-primary)" }}
+              />
               تماس تلفنی
             </a>
             <a
-              href="https://maps.google.com/?q=Tehran"
+              href={content.googleMaps}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium hover:bg-brand-50 transition"
+              className="flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium transition"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--theme-primary-soft)";
+                e.currentTarget.style.borderColor = "var(--theme-primary)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "";
+                e.currentTarget.style.borderColor = "";
+              }}
             >
-              <MapPin className="h-4 w-4 text-brand-700" />
+              <MapPin
+                className="h-4 w-4"
+                style={{ color: "var(--theme-primary)" }}
+              />
               مسیریابی
             </a>
           </div>
         </div>
       </div>
 
+      {/* ═══ Bottom CTA ═══════════════════════════ */}
       <div className="fixed bottom-5 right-4 left-4 md:left-auto md:right-6 md:w-auto z-30 md:max-w-md">
         <Link
-          href={`/booking?service=${id}`}
-          className="group flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-l from-gold-500 to-gold-600 px-5 py-4 md:px-7 md:py-5 text-ink-900 shadow-2xl shadow-gold-500/30 hover:shadow-gold-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
+          href={`/booking?service=${service.slug}`}
+          className="group flex items-center justify-between gap-3 rounded-2xl px-5 py-4 md:px-7 md:py-5 shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+          style={{
+            background: "var(--theme-accent)",
+            color: "#0b1f1d",
+          }}
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink-900/10 backdrop-blur-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/10 backdrop-blur-sm">
               <CalendarCheck className="h-5 w-5" />
             </div>
             <div className="text-right">
               <div className="text-sm md:text-base font-bold">
                 رزرو این خدمت
               </div>
-              <div className="text-[10px] md:text-xs text-ink-900/70">
+              <div className="text-[10px] md:text-xs opacity-70">
                 همین حالا وقت خود را رزرو کنید
               </div>
             </div>

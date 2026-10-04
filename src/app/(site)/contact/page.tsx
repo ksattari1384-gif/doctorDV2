@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   ArrowRight,
@@ -10,12 +12,15 @@ import {
   ExternalLink,
   Sparkles,
 } from "lucide-react";
+import { useAdminStore } from "@/lib/stores/admin-store";
 
 export default function ContactPage() {
+  const content = useAdminStore((s) => s.content);
+
   return (
     <div className="bg-background min-h-screen pb-20">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900 pt-8 pb-16 md:pb-20 rounded-b-[32px] md:rounded-b-[48px]">
+      {/* ═══ Header ═══ */}
+      <div className="bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900 pt-24 md:pt-28 pb-16 md:pb-20 rounded-b-[32px] md:rounded-b-[48px]">
         <div className="container mx-auto px-4 md:px-6">
           <Link
             href="/"
@@ -26,13 +31,22 @@ export default function ContactPage() {
           </Link>
 
           <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-4 py-2 text-sm font-medium text-white/95 mb-5">
-            <Sparkles className="h-4 w-4 text-gold-400" />
+            <Sparkles
+              className="h-4 w-4"
+              style={{ color: "var(--theme-accent)" }}
+            />
             <span>تماس با ما</span>
           </div>
 
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
             در{" "}
-            <span className="bg-gradient-to-l from-gold-400 via-gold-500 to-gold-600 bg-clip-text text-transparent">
+            <span
+              className="bg-clip-text text-transparent"
+              style={{
+                backgroundImage:
+                  "linear-gradient(to left, var(--theme-accent), var(--theme-accent))",
+              }}
+            >
               ارتباط
             </span>{" "}
             باشید
@@ -45,33 +59,51 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* Contact cards */}
+      {/* ═══ Contact cards ═══ */}
       <div className="container mx-auto px-4 md:px-6 -mt-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Phone */}
           <a
-            href="tel:+982100000000"
-            className="group rounded-2xl bg-surface border border-border p-5 hover:border-brand-300 hover:shadow-elevated transition-all"
+            href={`tel:${content.phone}`}
+            className="group rounded-2xl bg-surface border border-border p-5 transition-all hover:shadow-elevated"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--theme-primary)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "";
+            }}
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-700 group-hover:bg-brand-700 group-hover:text-white transition">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-xl transition-all"
+              style={{
+                background: "var(--theme-primary-soft)",
+                color: "var(--theme-primary)",
+              }}
+            >
               <Phone className="h-6 w-6" />
             </div>
             <h3 className="mt-4 text-base font-bold text-ink-800">
               تماس تلفنی
             </h3>
             <p className="mt-1 text-sm text-muted" dir="ltr">
-              ۰۲۱-۰۰۰۰۰۰۰۰
+              {content.phone}
             </p>
           </a>
 
           {/* WhatsApp */}
           <a
-            href="https://wa.me/989120000000"
+            href={content.whatsapp}
             target="_blank"
             rel="noreferrer"
-            className="group rounded-2xl bg-surface border border-border p-5 hover:border-green-300 hover:shadow-elevated transition-all"
+            className="group rounded-2xl bg-surface border border-border p-5 transition-all hover:shadow-elevated"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "#22c55e";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "";
+            }}
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-green-600 group-hover:bg-green-500 group-hover:text-white transition">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-green-600 transition-all group-hover:bg-green-500 group-hover:text-white">
               <MessageCircle className="h-6 w-6" />
             </div>
             <h3 className="mt-4 text-base font-bold text-ink-800">واتساپ</h3>
@@ -82,12 +114,18 @@ export default function ContactPage() {
 
           {/* Instagram */}
           <a
-            href="https://instagram.com/"
+            href={content.instagram}
             target="_blank"
             rel="noreferrer"
-            className="group rounded-2xl bg-surface border border-border p-5 hover:border-pink-300 hover:shadow-elevated transition-all"
+            className="group rounded-2xl bg-surface border border-border p-5 transition-all hover:shadow-elevated"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "#ec4899";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "";
+            }}
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pink-50 text-pink-600 group-hover:bg-gradient-to-tr group-hover:from-yellow-400 group-hover:via-pink-500 group-hover:to-purple-600 group-hover:text-white transition">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pink-50 text-pink-600 transition-all group-hover:bg-gradient-to-tr group-hover:from-yellow-400 group-hover:via-pink-500 group-hover:to-purple-600 group-hover:text-white">
               <Instagram className="h-6 w-6" />
             </div>
             <h3 className="mt-4 text-base font-bold text-ink-800">
@@ -100,13 +138,12 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* Map + Address */}
+      {/* ═══ Map + Form ═══ */}
       <div className="container mx-auto px-4 md:px-6 mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Map placeholder */}
           <div className="rounded-3xl border border-border bg-surface overflow-hidden shadow-soft">
             <div className="relative aspect-[4/3] bg-gradient-to-br from-brand-100 via-brand-50 to-cream-200 overflow-hidden">
-              {/* Grid pattern */}
               <svg
                 className="absolute inset-0 w-full h-full opacity-20"
                 xmlns="http://www.w3.org/2000/svg"
@@ -133,18 +170,25 @@ export default function ContactPage() {
               {/* Pin */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="relative">
-                  <div className="absolute -inset-8 rounded-full bg-brand-500/20 animate-ping" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-brand-700 text-white shadow-xl">
+                  <div
+                    className="absolute -inset-8 rounded-full animate-ping opacity-20"
+                    style={{ background: "var(--theme-primary)" }}
+                  />
+                  <div
+                    className="relative flex h-16 w-16 items-center justify-center rounded-full text-white shadow-xl"
+                    style={{ background: "var(--theme-primary)" }}
+                  >
                     <MapPin className="h-8 w-8" />
                   </div>
                 </div>
               </div>
 
               <a
-                href="https://maps.google.com/?q=Tehran"
+                href={content.googleMaps}
                 target="_blank"
                 rel="noreferrer"
-                className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-xl bg-white/95 backdrop-blur-md px-4 py-2 text-xs font-bold text-brand-800 hover:bg-white transition shadow-md"
+                className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-xl bg-white/95 backdrop-blur-md px-4 py-2 text-xs font-bold shadow-md transition"
+                style={{ color: "var(--theme-primary)" }}
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 باز کردن در نقشه
@@ -156,22 +200,25 @@ export default function ContactPage() {
                 آدرس مطب
               </h3>
               <p className="text-sm text-muted leading-relaxed">
-                تهران، خیابان ولیعصر، بالاتر از پارک ساعی، پلاک ۱۲۳، طبقه‌ی
-                ۲، واحد ۴
+                {content.address}
               </p>
 
-              <div className="mt-4 flex items-center gap-2">
+              <div className="mt-4 flex items-center gap-2 flex-wrap">
                 <a
-                  href="https://maps.google.com/?q=Tehran"
+                  href={content.googleMaps}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-brand-50 px-3 py-2 text-xs font-medium text-brand-800 hover:bg-brand-100 transition"
+                  className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition"
+                  style={{
+                    background: "var(--theme-primary-soft)",
+                    color: "var(--theme-primary)",
+                  }}
                 >
                   <MapPin className="h-3.5 w-3.5" />
                   مسیریابی
                 </a>
                 <a
-                  href="https://wa.me/989120000000"
+                  href={content.whatsapp}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700 hover:bg-green-100 transition"
@@ -201,7 +248,10 @@ export default function ContactPage() {
                   <input
                     type="text"
                     placeholder="مثلاً: علی محمدی"
-                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm placeholder:text-muted focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm placeholder:text-muted focus:outline-none focus:ring-2 transition"
+                    style={
+                      { "--tw-ring-color": "var(--theme-primary)" } as any
+                    }
                   />
                 </div>
                 <div>
@@ -212,7 +262,10 @@ export default function ContactPage() {
                     type="tel"
                     placeholder="۰۹۱۲..."
                     dir="ltr"
-                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm placeholder:text-muted focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition text-left"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-left placeholder:text-muted focus:outline-none focus:ring-2 transition"
+                    style={
+                      { "--tw-ring-color": "var(--theme-primary)" } as any
+                    }
                   />
                 </div>
               </div>
@@ -224,7 +277,8 @@ export default function ContactPage() {
                 <input
                   type="text"
                   placeholder="مثلاً: سوال درباره ایمپلنت"
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm placeholder:text-muted focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm placeholder:text-muted focus:outline-none focus:ring-2 transition"
+                  style={{ "--tw-ring-color": "var(--theme-primary)" } as any}
                 />
               </div>
 
@@ -235,13 +289,15 @@ export default function ContactPage() {
                 <textarea
                   rows={4}
                   placeholder="پیام خود را اینجا بنویسید..."
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm placeholder:text-muted focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition resize-none"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm placeholder:text-muted focus:outline-none focus:ring-2 transition resize-none"
+                  style={{ "--tw-ring-color": "var(--theme-primary)" } as any}
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full rounded-xl bg-brand-700 px-6 py-3.5 text-sm font-bold text-white hover:bg-brand-800 transition shadow-sm"
+                className="w-full rounded-xl px-6 py-3.5 text-sm font-bold text-white transition shadow-sm"
+                style={{ background: "var(--theme-primary)" }}
               >
                 ارسال پیام
               </button>
@@ -250,35 +306,33 @@ export default function ContactPage() {
             {/* Working hours */}
             <div className="mt-6 rounded-2xl bg-cream-200 p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-4 w-4 text-ink-800" />
+                <Clock
+                  className="h-4 w-4"
+                  style={{ color: "var(--theme-primary)" }}
+                />
                 <h4 className="text-sm font-bold text-ink-800">
                   ساعات کاری
                 </h4>
               </div>
-              <div className="space-y-1 text-xs text-ink-800/70">
-                <div className="flex justify-between">
-                  <span>شنبه تا چهارشنبه:</span>
-                  <span dir="ltr">۹:۰۰ - ۱۹:۰۰</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>پنجشنبه:</span>
-                  <span dir="ltr">۹:۰۰ - ۱۴:۰۰</span>
-                </div>
-                <div className="flex justify-between text-red-600">
-                  <span>جمعه:</span>
-                  <span>تعطیل</span>
-                </div>
-              </div>
+              <p className="text-xs text-ink-800/70 leading-relaxed">
+                {content.workingHoursShort}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Email row */}
+      {/* ═══ Email row ═══ */}
       <div className="container mx-auto px-4 md:px-6 mt-8">
         <div className="rounded-3xl bg-gradient-to-br from-cream-100 via-cream-200 to-cream-100 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4 text-center md:text-right">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-ink-900 text-gold-400">
+            <div
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl"
+              style={{
+                background: "var(--theme-primary)",
+                color: "var(--theme-accent)",
+              }}
+            >
               <Mail className="h-7 w-7" />
             </div>
             <div>
@@ -291,11 +345,12 @@ export default function ContactPage() {
             </div>
           </div>
           <a
-            href="mailto:info@example.com"
-            className="inline-flex items-center gap-2 rounded-xl bg-ink-900 px-6 py-3 text-sm font-bold text-white hover:bg-ink-800 transition"
+            href={`mailto:${content.email}`}
+            className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition"
+            style={{ background: "var(--theme-primary)" }}
           >
             <Mail className="h-4 w-4" />
-            info@example.com
+            {content.email}
           </a>
         </div>
       </div>

@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAdminStore } from "@/lib/stores/admin-store";
 
 type FloatingItem = {
   id: string;
@@ -21,6 +22,7 @@ type FloatingItem = {
 };
 
 export function FloatingBar() {
+  const content = useAdminStore((s) => s.content);
   const [isOpen, setIsOpen] = useState(false);
   const [showLabels, setShowLabels] = useState(false);
 
@@ -28,28 +30,29 @@ export function FloatingBar() {
     {
       id: "maps",
       label: "مسیریابی",
-      href: "https://maps.google.com/?q=Tehran",
+      href: content.googleMaps,
       icon: <MapPin className="h-5 w-5" />,
       color: "bg-red-500 hover:bg-red-600",
     },
     {
       id: "whatsapp",
       label: "واتساپ",
-      href: "https://wa.me/989120000000",
+      href: content.whatsapp,
       icon: <MessageCircle className="h-5 w-5" />,
       color: "bg-green-500 hover:bg-green-600",
     },
     {
       id: "instagram",
       label: "اینستاگرام",
-      href: "https://instagram.com/",
+      href: content.instagram,
       icon: <Instagram className="h-5 w-5" />,
-      color: "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 hover:opacity-90",
+      color:
+        "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 hover:opacity-90",
     },
     {
       id: "call",
       label: "تماس",
-      href: "tel:+982100000000",
+      href: `tel:${content.phone}`,
       icon: <Phone className="h-5 w-5" />,
       color: "bg-blue-500 hover:bg-blue-600",
     },
@@ -57,9 +60,8 @@ export function FloatingBar() {
       id: "ai",
       label: "دستیار هوشمند",
       icon: <Sparkles className="h-5 w-5" />,
-      color: "bg-brand-700 hover:bg-brand-800",
+      color: "text-white",
       onClick: () => {
-        // TODO: باز کردن پنجره‌ی AI در فاز ۸
         alert("دستیار هوشمند به‌زودی فعال می‌شود ✨");
       },
     },
@@ -67,10 +69,10 @@ export function FloatingBar() {
 
   return (
     <div
-className="fixed bottom-6 left-4 md:bottom-5 md:left-5 z-40 flex flex-col items-start gap-3"      onMouseEnter={() => setShowLabels(true)}
+      className="fixed bottom-5 left-3 md:bottom-5 md:left-5 z-40 flex flex-col items-start gap-2.5"
+      onMouseEnter={() => setShowLabels(true)}
       onMouseLeave={() => setShowLabels(false)}
     >
-      {/* Items */}
       <div
         className={cn(
           "flex flex-col gap-2.5 transition-all duration-300",
@@ -80,13 +82,19 @@ className="fixed bottom-6 left-4 md:bottom-5 md:left-5 z-40 flex flex-col items-
         )}
       >
         {items.map((item, idx) => {
-          const content = (
+          const isAI = item.id === "ai";
+          const content_ = (
             <>
               <span
                 className={cn(
-                  "flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg transition",
+                  "flex h-11 w-11 items-center justify-center rounded-full shadow-lg transition",
                   item.color
                 )}
+                style={
+                  isAI
+                    ? { background: "var(--theme-primary)" }
+                    : undefined
+                }
               >
                 {item.icon}
               </span>
@@ -103,8 +111,7 @@ className="fixed bottom-6 left-4 md:bottom-5 md:left-5 z-40 flex flex-col items-
             </>
           );
 
-          const wrapperClass =
-            "flex items-center gap-2 group";
+          const wrapperClass = "flex items-center gap-2 group";
 
           if (item.href) {
             return (
@@ -117,7 +124,7 @@ className="fixed bottom-6 left-4 md:bottom-5 md:left-5 z-40 flex flex-col items-
                 style={{ transitionDelay: `${idx * 40}ms` }}
                 aria-label={item.label}
               >
-                {content}
+                {content_}
               </a>
             );
           }
@@ -130,7 +137,7 @@ className="fixed bottom-6 left-4 md:bottom-5 md:left-5 z-40 flex flex-col items-
               style={{ transitionDelay: `${idx * 40}ms` }}
               aria-label={item.label}
             >
-              {content}
+              {content_}
             </button>
           );
         })}
@@ -140,17 +147,18 @@ className="fixed bottom-6 left-4 md:bottom-5 md:left-5 z-40 flex flex-col items-
       <button
         onClick={() => setIsOpen((v) => !v)}
         className={cn(
-          "flex h-14 w-14 items-center justify-center rounded-full shadow-xl transition-all duration-300",
-          isOpen
-            ? "bg-ink-800 hover:bg-ink-900 rotate-90"
-            : "bg-brand-700 hover:bg-brand-800 animate-pulse-slow"
+          "flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full shadow-xl transition-all duration-300 text-white",
+          isOpen ? "rotate-90" : "md:animate-pulse-slow"
         )}
+        style={{
+          background: isOpen ? "#0b1f1d" : "var(--theme-primary)",
+        }}
         aria-label={isOpen ? "بستن منوی ارتباط" : "باز کردن منوی ارتباط"}
       >
         {isOpen ? (
-          <X className="h-6 w-6 text-white" />
+          <X className="h-6 w-6" />
         ) : (
-          <MessageCircle className="h-6 w-6 text-white" />
+          <MessageCircle className="h-6 w-6" />
         )}
       </button>
     </div>

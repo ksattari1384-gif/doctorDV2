@@ -13,17 +13,9 @@ import {
   Phone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAdminStore } from "@/lib/stores/admin-store";
 
 type Step = 1 | 2 | 3 | 4;
-
-const SERVICES = [
-  { id: "implant", name: "ایمپلنت دندان", price: "۱۵,۰۰۰,۰۰۰", duration: 60, emoji: "🦷" },
-  { id: "laminate", name: "لمینت سرامیکی", price: "۸,۰۰۰,۰۰۰", duration: 90, emoji: "💎" },
-  { id: "orthodontics", name: "ارتودنسی", price: "مشاوره رایگان", duration: 45, emoji: "✨" },
-  { id: "root-canal", name: "عصب‌کشی", price: "۲,۵۰۰,۰۰۰", duration: 60, emoji: "🩺" },
-  { id: "scaling", name: "جرم‌گیری", price: "۸۰۰,۰۰۰", duration: 30, emoji: "🛡️" },
-  { id: "pediatric", name: "دندانپزشکی کودکان", price: "۵۰۰,۰۰۰", duration: 30, emoji: "🧒" },
-];
 
 const TIME_SLOTS = [
   "۰۹:۰۰", "۰۹:۳۰", "۱۰:۰۰", "۱۰:۳۰",
@@ -52,25 +44,63 @@ const getNextDays = () => {
 };
 
 export default function BookingPage() {
+  // ═══ Store ═══
+  const services = useAdminStore((s) => s.services);
+  const content = useAdminStore((s) => s.content);
+  const addAppointment = useAdminStore((s) => s.addAppointment);
+
+  // فقط خدمات فعال
+  const activeServices = services.filter((s) => s.isActive);
+
+  // ═══ UI State ═══
   const [step, setStep] = useState<Step>(1);
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
+    null
+  );
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [form, setForm] = useState({ firstName: "", lastName: "", phone: "", notes: "" });
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    notes: "",
+  });
   const [submitted, setSubmitted] = useState(false);
 
   const days = getNextDays();
-  const service = SERVICES.find((s) => s.id === selectedService);
+  const service = activeServices.find((s) => s.id === selectedServiceId);
 
   const canGoNext =
-    (step === 1 && selectedService) ||
+    (step === 1 && selectedServiceId) ||
     (step === 2 && selectedDay !== null && selectedTime) ||
     (step === 3 && form.firstName && form.lastName && form.phone);
 
   const handleSubmit = () => {
+    if (!service || selectedDay === null || !selectedTime) return;
+
+    // ثبت نوبت توی store
+    const appointment = {
+      id: `QD-${Date.now().toString().slice(-10)}`,
+      patient: `${form.firstName} ${form.lastName}`,
+      phone: form.phone,
+      email: "",
+      serviceId: service.id,
+      service: service.name,
+      duration: service.duration,
+      date: days[selectedDay].isToday ? "امروز" : days[selectedDay].dayName,
+      time: selectedTime,
+      status: "pending" as const,
+      notes: form.notes,
+      price: service.price
+        ? service.price.toLocaleString("fa-IR")
+        : "مشاوره رایگان",
+    };
+
+    addAppointment(appointment);
     setSubmitted(true);
   };
 
+  // ─── Success view ─────────────────────────────
   if (submitted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4 py-20">
@@ -107,7 +137,8 @@ export default function BookingPage() {
 
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-6 py-3 text-sm font-bold text-white hover:bg-brand-800 transition"
+            className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition"
+            style={{ background: "var(--theme-primary)" }}
           >
             بازگشت به صفحه اصلی
             <ArrowLeft className="h-4 w-4" />
@@ -117,8 +148,10 @@ export default function BookingPage() {
     );
   }
 
+  // ─── Multi-step form ──────────────────────────
   return (
     <div className="min-h-screen bg-background pb-72 md:pb-80">
+      {/* ═══ Header ═══ */}
       <div className="bg-gradient-to-br from-ink-900 via-brand-900 to-ink-900 pt-24 md:pt-28 pb-16 md:pb-20 rounded-b-[32px] md:rounded-b-[48px]">
         <div className="container mx-auto px-4 md:px-6">
           <Link
@@ -131,7 +164,13 @@ export default function BookingPage() {
 
           <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">
             رزرو نوبت{" "}
-            <span className="bg-gradient-to-l from-gold-400 via-gold-500 to-gold-600 bg-clip-text text-transparent">
+            <span
+              className="bg-clip-text text-transparent"
+              style={{
+                backgroundImage:
+                  "linear-gradient(to left, var(--theme-accent), var(--theme-accent))",
+              }}
+            >
               آنلاین
             </span>
           </h1>
@@ -141,6 +180,7 @@ export default function BookingPage() {
         </div>
       </div>
 
+      {/* ═══ Steps indicator ═══ */}
       <div className="container mx-auto px-4 md:px-6 -mt-8 relative z-10">
         <div className="rounded-3xl bg-surface border border-border shadow-elevated p-4 md:p-5">
           <div className="flex items-center justify-between">
@@ -158,13 +198,18 @@ export default function BookingPage() {
                   <div className="flex flex-col items-center flex-1">
                     <div
                       className={cn(
-                        "flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full transition-all",
-                        isDone
-                          ? "bg-green-500 text-white"
-                          : isActive
-                          ? "bg-gold-500 text-ink-900 shadow-md"
-                          : "bg-brand-50 text-muted"
+                        "flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full transition-all text-white"
                       )}
+                      style={
+                        isDone
+                          ? { background: "#10b981" }
+                          : isActive
+                          ? { background: "var(--theme-accent)", color: "#0b1f1d" }
+                          : {
+                              background: "var(--theme-primary-soft)",
+                              color: "var(--theme-primary)",
+                            }
+                      }
                     >
                       {isDone ? (
                         <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5" />
@@ -196,23 +241,32 @@ export default function BookingPage() {
         </div>
       </div>
 
+      {/* ═══ Content ═══ */}
       <div className="container mx-auto px-4 md:px-6 mt-6 md:mt-8">
+        {/* STEP 1 */}
         {step === 1 && (
           <div>
             <h2 className="text-lg md:text-xl font-bold text-ink-800 mb-4">
               چه خدمتی می‌خواهید؟
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {SERVICES.map((s) => (
+              {activeServices.map((s) => (
                 <button
                   key={s.id}
-                  onClick={() => setSelectedService(s.id)}
+                  onClick={() => setSelectedServiceId(s.id)}
                   className={cn(
-                    "flex items-center gap-3 rounded-2xl border-2 p-4 transition-all text-right",
-                    selectedService === s.id
-                      ? "border-gold-500 bg-gold-500/5 shadow-md"
-                      : "border-border bg-surface hover:border-brand-300"
+                    "flex items-center gap-3 rounded-2xl border-2 p-4 transition-all text-right"
                   )}
+                  style={{
+                    borderColor:
+                      selectedServiceId === s.id
+                        ? "var(--theme-accent)"
+                        : undefined,
+                    background:
+                      selectedServiceId === s.id
+                        ? "var(--theme-primary-soft)"
+                        : undefined,
+                  }}
                 >
                   <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-cream-200 text-3xl">
                     {s.emoji}
@@ -226,11 +280,21 @@ export default function BookingPage() {
                         <Clock className="h-3 w-3" />
                         {s.duration} دقیقه
                       </span>
-                      <span className="font-bold text-brand-700">{s.price}</span>
+                      <span
+                        className="font-bold"
+                        style={{ color: "var(--theme-primary)" }}
+                      >
+                        {s.price
+                          ? s.price.toLocaleString("fa-IR")
+                          : "مشاوره رایگان"}
+                      </span>
                     </div>
                   </div>
-                  {selectedService === s.id && (
-                    <CheckCircle2 className="h-5 w-5 text-gold-500 shrink-0" />
+                  {selectedServiceId === s.id && (
+                    <CheckCircle2
+                      className="h-5 w-5 shrink-0"
+                      style={{ color: "var(--theme-accent)" }}
+                    />
                   )}
                 </button>
               ))}
@@ -238,6 +302,7 @@ export default function BookingPage() {
           </div>
         )}
 
+        {/* STEP 2 */}
         {step === 2 && (
           <div>
             <h2 className="text-lg md:text-xl font-bold text-ink-800 mb-4">
@@ -252,12 +317,18 @@ export default function BookingPage() {
                   disabled={d.isClosed}
                   className={cn(
                     "shrink-0 rounded-2xl border-2 px-4 py-3 text-center min-w-[80px] transition-all",
-                    d.isClosed
-                      ? "border-border bg-background opacity-40 cursor-not-allowed"
-                      : selectedDay === idx
-                      ? "border-gold-500 bg-gold-500/10 shadow-md"
-                      : "border-border bg-surface hover:border-brand-300"
+                    d.isClosed && "bg-background opacity-40 cursor-not-allowed"
                   )}
+                  style={{
+                    borderColor:
+                      selectedDay === idx
+                        ? "var(--theme-accent)"
+                        : undefined,
+                    background:
+                      selectedDay === idx
+                        ? "var(--theme-primary-soft)"
+                        : undefined,
+                  }}
                 >
                   <div className="text-xs text-muted">{d.dayName}</div>
                   <div className="mt-1 text-lg font-bold text-ink-800">
@@ -265,7 +336,13 @@ export default function BookingPage() {
                   </div>
                   <div className="text-[10px] text-muted">{d.month}</div>
                   {d.isToday && (
-                    <div className="mt-1 inline-block rounded-full bg-brand-100 px-2 py-0.5 text-[9px] text-brand-800">
+                    <div
+                      className="mt-1 inline-block rounded-full px-2 py-0.5 text-[9px]"
+                      style={{
+                        background: "var(--theme-primary-soft)",
+                        color: "var(--theme-primary)",
+                      }}
+                    >
                       امروز
                     </div>
                   )}
@@ -289,11 +366,17 @@ export default function BookingPage() {
                       key={t}
                       onClick={() => setSelectedTime(t)}
                       className={cn(
-                        "rounded-xl border py-2.5 text-sm font-medium transition-all",
-                        selectedTime === t
-                          ? "border-gold-500 bg-gold-500 text-ink-900 shadow-md"
-                          : "border-border bg-surface text-ink-800 hover:border-brand-300"
+                        "rounded-xl border py-2.5 text-sm font-medium transition-all"
                       )}
+                      style={
+                        selectedTime === t
+                          ? {
+                              background: "var(--theme-accent)",
+                              color: "#0b1f1d",
+                              borderColor: "var(--theme-accent)",
+                            }
+                          : undefined
+                      }
                     >
                       {t}
                     </button>
@@ -304,6 +387,7 @@ export default function BookingPage() {
           </div>
         )}
 
+        {/* STEP 3 */}
         {step === 3 && (
           <div>
             <h2 className="text-lg md:text-xl font-bold text-ink-800 mb-4">
@@ -322,7 +406,10 @@ export default function BookingPage() {
                       setForm({ ...form, firstName: e.target.value })
                     }
                     placeholder="مثلاً: علی"
-                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 transition"
+                    style={
+                      { "--tw-ring-color": "var(--theme-primary)" } as any
+                    }
                   />
                 </div>
                 <div>
@@ -336,7 +423,10 @@ export default function BookingPage() {
                       setForm({ ...form, lastName: e.target.value })
                     }
                     placeholder="مثلاً: محمدی"
-                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 transition"
+                    style={
+                      { "--tw-ring-color": "var(--theme-primary)" } as any
+                    }
                   />
                 </div>
               </div>
@@ -351,7 +441,8 @@ export default function BookingPage() {
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   placeholder="۰۹۱۲۳۴۵۶۷۸۹"
                   dir="ltr"
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition text-left"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-left focus:outline-none focus:ring-2 transition"
+                  style={{ "--tw-ring-color": "var(--theme-primary)" } as any}
                 />
               </div>
 
@@ -364,13 +455,15 @@ export default function BookingPage() {
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   placeholder="اگر نکته‌ی خاصی هست، اینجا بنویسید..."
                   rows={3}
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition resize-none"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 transition resize-none"
+                  style={{ "--tw-ring-color": "var(--theme-primary)" } as any}
                 />
               </div>
             </div>
           </div>
         )}
 
+        {/* STEP 4 */}
         {step === 4 && (
           <div>
             <h2 className="text-lg md:text-xl font-bold text-ink-800 mb-4">
@@ -391,7 +484,10 @@ export default function BookingPage() {
 
               <div className="py-4 space-y-3 border-b border-border">
                 <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="h-4 w-4 text-brand-700" />
+                  <Calendar
+                    className="h-4 w-4"
+                    style={{ color: "var(--theme-primary)" }}
+                  />
                   <span className="text-muted">تاریخ:</span>
                   <span className="font-medium text-ink-800">
                     {selectedDay !== null && days[selectedDay].dayName}{" "}
@@ -400,21 +496,30 @@ export default function BookingPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4 text-brand-700" />
+                  <Clock
+                    className="h-4 w-4"
+                    style={{ color: "var(--theme-primary)" }}
+                  />
                   <span className="text-muted">ساعت:</span>
                   <span className="font-medium text-ink-800">
                     {selectedTime}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <User className="h-4 w-4 text-brand-700" />
+                  <User
+                    className="h-4 w-4"
+                    style={{ color: "var(--theme-primary)" }}
+                  />
                   <span className="text-muted">نام:</span>
                   <span className="font-medium text-ink-800">
                     {form.firstName} {form.lastName}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-4 w-4 text-brand-700" />
+                  <Phone
+                    className="h-4 w-4"
+                    style={{ color: "var(--theme-primary)" }}
+                  />
                   <span className="text-muted">موبایل:</span>
                   <span className="font-medium text-ink-800" dir="ltr">
                     {form.phone}
@@ -429,9 +534,14 @@ export default function BookingPage() {
 
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-sm text-muted">هزینه‌ی تقریبی:</span>
-                <span className="text-base font-bold text-brand-700">
-                  {service?.price}
-                  {service?.price !== "مشاوره رایگان" && (
+                <span
+                  className="text-base font-bold"
+                  style={{ color: "var(--theme-primary)" }}
+                >
+                  {service?.price
+                    ? service.price.toLocaleString("fa-IR")
+                    : "مشاوره رایگان"}
+                  {service?.price && (
                     <span className="text-xs font-normal text-muted mr-1">
                       تومان
                     </span>
@@ -439,8 +549,18 @@ export default function BookingPage() {
                 </span>
               </div>
 
-              <div className="mt-5 rounded-2xl bg-brand-50 border border-brand-100 p-4">
-                <p className="text-xs text-brand-800 leading-relaxed">
+              <div
+                className="mt-5 rounded-2xl p-4"
+                style={{
+                  background: "var(--theme-primary-soft)",
+                  borderColor: "var(--theme-primary)",
+                  borderWidth: 1,
+                }}
+              >
+                <p
+                  className="text-xs leading-relaxed"
+                  style={{ color: "var(--theme-primary)" }}
+                >
                   💡 پس از ثبت درخواست، منشی مطب برای تأیید نهایی با شما تماس
                   خواهد گرفت. نوبت شما پس از تأیید، قطعی می‌شود.
                 </p>
@@ -450,6 +570,7 @@ export default function BookingPage() {
         )}
       </div>
 
+      {/* ═══ Navigation bar ═══ */}
       <div className="fixed bottom-5 right-4 left-4 md:left-auto md:right-6 md:w-auto z-30 md:max-w-md">
         <div className="flex items-center gap-2">
           {step > 1 && (
@@ -469,9 +590,10 @@ export default function BookingPage() {
               className={cn(
                 "flex flex-1 items-center justify-between gap-3 rounded-2xl px-5 py-4 transition-all",
                 canGoNext
-                  ? "bg-gradient-to-l from-brand-700 to-brand-800 text-white shadow-2xl shadow-brand-700/30 hover:scale-[1.02]"
+                  ? "text-white shadow-2xl hover:scale-[1.02]"
                   : "bg-border text-muted cursor-not-allowed"
               )}
+              style={canGoNext ? { background: "var(--theme-primary)" } : undefined}
             >
               <span className="text-sm md:text-base font-bold">
                 مرحله بعد
@@ -481,7 +603,11 @@ export default function BookingPage() {
           ) : (
             <button
               onClick={handleSubmit}
-              className="flex flex-1 items-center justify-between gap-3 rounded-2xl bg-gradient-to-l from-gold-500 to-gold-600 px-5 py-4 text-ink-900 shadow-2xl shadow-gold-500/30 hover:scale-[1.02] transition-all"
+              className="flex flex-1 items-center justify-between gap-3 rounded-2xl px-5 py-4 shadow-2xl hover:scale-[1.02] transition-all"
+              style={{
+                background: "var(--theme-accent)",
+                color: "#0b1f1d",
+              }}
             >
               <span className="text-sm md:text-base font-bold">
                 ثبت درخواست رزرو

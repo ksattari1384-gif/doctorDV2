@@ -40,7 +40,8 @@ export function ServiceFilters({
             onSearch?.(e.target.value);
           }}
           placeholder="جستجو در خدمات..."
-          className="w-full rounded-full border border-border bg-surface pr-11 pl-4 py-3.5 text-sm placeholder:text-muted focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/10 transition"
+          className="w-full rounded-full border border-border bg-surface pr-11 pl-4 py-3.5 text-sm placeholder:text-muted focus:outline-none focus:ring-2 transition"
+style={{ "--tw-ring-color": "var(--theme-primary)" } as any}
         />
       </div>
 
@@ -54,11 +55,29 @@ export function ServiceFilters({
                 key={cat.id}
                 onClick={() => handleCategory(cat.id)}
                 className={cn(
-                  "shrink-0 flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-medium transition-all whitespace-nowrap",
-                  isActive
-                    ? "bg-gold-500 text-ink-900 shadow-md"
-                    : "text-white/70 hover:bg-white/10 hover:text-white"
-                )}
+  "shrink-0 flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-medium transition-all whitespace-nowrap"
+)}
+style={
+  isActive
+    ? {
+        background: "var(--theme-accent)",
+        color: "#0b1f1d",
+        boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+      }
+    : { color: "rgba(255,255,255,0.7)" }
+}
+onMouseEnter={(e) => {
+  if (!isActive) {
+    e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+    e.currentTarget.style.color = "#ffffff";
+  }
+}}
+onMouseLeave={(e) => {
+  if (!isActive) {
+    e.currentTarget.style.background = "";
+    e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+  }
+}}
               >
                 <span>{cat.icon}</span>
                 <span>{cat.label}</span>
